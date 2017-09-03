@@ -1,21 +1,15 @@
-const electron = require('electron');
-// Module to control application life.
-const app = electron.app;
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
+const electron = require('electron')
+const app = electron.app
+const BrowserWindow = electron.BrowserWindow
+const path = require('path')
+const url = require('url')
 
-const path = require('path');
-const url = require('url');
+let mainWindow
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
-
-function createWindow() {
+function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 500,
-    height: 750,
+    width: 500, height: 750,
     alwaysOnTop: true,
     transparent: true,
     toolbar: true,
@@ -23,94 +17,70 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, 'index.html'),
-      protocol: 'file:',
-      slashes: true
-    })
-  );
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
+  mainWindow.on('closed', function () {
+    mainWindow = null
+  })
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createWindow)
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function() {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
+
+app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
-    app.quit();
+    app.quit() // quit app, not just window
   }
-});
+})
 
-app.on('activate', function() {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
+app.on('activate', function () {
   if (mainWindow === null) {
-    createWindow();
+    createWindow() // create on dock click
   }
-});
+})
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+const config = require('./config.json');
+const Genius = require('genius-api');
+const LastFmNode = require('lastfm').LastFmNode;
+const Xray = require('x-ray');
+const { ipcMain } = require('electron')
 
-var Genius = require('genius-api');
-var genius = new Genius('genius_api_key');
-
-var LastFmNode = require('lastfm').LastFmNode;
-var lastfm = new LastFmNode({
-  api_key: 'api_key',
-  secret: 'api_secret',
+const genius = new Genius(config.geniusApiKey);
+const lastfm = new LastFmNode({
+  api_key: config.lastfmApiKey,
+  secret: config.lastfmSecret,
   useragent: 'choon/v0.1.0 Choon'
 });
+const xray = Xray();
+const trackStream = lastfm.stream(config.lastfmUsername);
 
-var Xray = require('x-ray');
-var xray = Xray();
-
-var trackStream = lastfm.stream('gigglesticks');
-
-const { ipcMain } = require('electron');
 ipcMain.on('asynchronous-message', (event, arg) => {
-  // console.log(arg)  // prints "ping"
-  event.sender.send('asynchronous-reply', 'ses');
-});
+  event.sender.send('asynchronous-reply', 'ses')
+})
 
 ipcMain.on('synchronous-message', (event, arg) => {
-  // console.log(arg)  // prints "ping"
-  event.returnValue = 'sause';
-});
+  event.returnValue = 'sause'
+})
 
 trackStream.on('nowPlaying', function(track) {
-  // console.log('Last played: ', track.name, track.artist['#text']);
-  genius
-    .search(track.name + ' ' + track.artist['#text'])
-    .then(function(response) {
-      // console.log('hits', response.hits[0]);
-
-      xray(response.hits[0].result.url, '.lyrics@html')(function(err, body) {
-        // console.log(track.artist['#text'], '-', track.name);
-        // console.log(body) // google
-        mainWindow.webContents.send('new-track', {
-          lyrics: body,
-          artist: track.artist['#text'],
-          title: track.name
-        });
+  genius.search(track.name + ' ' + track.artist['#text']).then(function(response) {
+    xray(response.hits[0].result.url, '.lyrics@html')(function(err, body) {
+      mainWindow.webContents.send('new-track', {
+        lyrics: body,
+        artist: track.artist['#text'],
+        title: track.name
       });
     });
+  });
 });
 
 trackStream.start();
