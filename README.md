@@ -2,6 +2,8 @@
 
 A tiny app to display lyrics for the song you're currently scrobbling to last.fm.
 
+![Lyric Sheet](https://i.imgur.com/Ckhqb83.png)
+
 ## To Use
 
 To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
