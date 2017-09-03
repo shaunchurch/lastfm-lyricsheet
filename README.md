@@ -21,4 +21,4 @@ npm start
 
 ## Build app commands
 
-macOS: `electron-packager . LyricSheet --platform=darwin --out=. --overwrite`
+macOS: `electron-packager . LyricSheet --platform=darwin --out=./build --overwrite`
