@@ -6,8 +6,7 @@ const url = require('url');
 
 let mainWindow;
 
-function createWindow() {
-  // Create the browser window.
+const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 750,
@@ -17,7 +16,6 @@ function createWindow() {
     titleBarStyle: 'hidden-inset'
   });
 
-  // and load the index.html of the app.
   mainWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, 'index.html'),
@@ -26,30 +24,31 @@ function createWindow() {
     })
   );
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
-
-  mainWindow.on('closed', function() {
+  mainWindow.on('closed', () => {
     mainWindow = null;
   });
-}
+
+  // auto open dev tools
+  // mainWindow.webContents.openDevTools()
+};
 
 app.on('ready', createWindow);
 
-app.on('window-all-closed', function() {
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit(); // quit app, not just window
   }
 });
 
-app.on('activate', function() {
+app.on('activate', () => {
   if (mainWindow === null) {
     createWindow(); // create on dock click
   }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+/**
+ * Do the lyric thing with the example module globals
+ */
 const config = require('./config.json');
 const Genius = require('genius-api');
 const LastFmNode = require('lastfm').LastFmNode;
@@ -63,7 +62,7 @@ const lastfm = new LastFmNode({
   useragent: 'choon/v0.1.0 Choon'
 });
 const xray = Xray();
-const trackStream = lastfm.stream(config.lastfmUsername);
+const lastfmStream = lastfm.stream(config.lastfmUsername);
 const errorMsg = "We can't find that one. Sorry!";
 
 ipcMain.on('synchronous-message', (event, arg) => {
@@ -93,5 +92,6 @@ const updateWindow = (body, track) => {
   });
 };
 
-trackStream.on('nowPlaying', handleStreamingTrack);
-trackStream.start();
+// hook up to last fm
+lastfmStream.on('nowPlaying', handleStreamingTrack);
+lastfmStream.start();
