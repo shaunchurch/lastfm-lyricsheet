@@ -4,7 +4,9 @@
   "description": "A minimal Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build":
+      "electron-packager . LyricSheet --platform=darwin --out=./build --overwrite"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": ["Electron", "quick", "start", "tutorial", "demo"],
