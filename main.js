@@ -54,7 +54,7 @@ const LastFmNode = require('lastfm').LastFmNode;
 const Xray = require('x-ray');
 const { ipcMain } = require('electron')
 
-const genius = new Genius(config.geniusApiKey);
+const genius = new Genius(config.geniusClientAccessToken);
 const lastfm = new LastFmNode({
   api_key: config.lastfmApiKey,
   secret: config.lastfmSecret,
