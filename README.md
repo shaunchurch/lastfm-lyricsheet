@@ -1,6 +1,6 @@
 # Last.fm Lyric Sheet
 
-A tiny app to display lyrics the song you're currently scrobbling to last.fm.
+A tiny app to display lyrics for the song you're currently scrobbling to last.fm.
 
 ## To Use
 
