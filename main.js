@@ -10,7 +10,7 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 600,
     height: 800,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
     transparent: true,
     toolbar: true,
     titleBarStyle: 'hidden',
@@ -31,15 +31,13 @@ const createWindow = () => {
   });
 
   // auto open dev tools
-  // mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit(); // quit app, not just window
-  }
+  app.quit(); // quit app, not just window
 });
 
 app.on('activate', () => {
@@ -72,7 +70,9 @@ ipcMain.on('synchronous-message', (event, arg) => {
 });
 
 const handleStreamingTrack = track => {
+  if (!track || !track.artist || !track.name) return updateWindow(errorMsg, {});
   track.artist = track.artist['#text']; // dmo
+  track.backgroundImage = getBackgroundImage(track);
   const query = `${track.artist} ${track.name}`;
   console.log('Searching for', query);
   genius.search(query).then(res => {
@@ -91,8 +91,15 @@ const updateWindow = (body, track) => {
   mainWindow.webContents.send('new-track', {
     lyrics: body,
     artist: track.artist,
-    title: track.name
+    title: track.name,
+    backgroundImage: track.backgroundImage
   });
+};
+
+const getBackgroundImage = track => {
+  if (!track.image || !track.image.length) return '';
+  const image = track.image[track.image.length - 1]['#text'];
+  return image;
 };
 
 // hook up to last fm
