@@ -1,37 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Lyric Sheet</title>
-    <style>
-      body {
-        -webkit-app-region: drag;
-        font: menu;
-        line-height: 1.5em;
-        background: rgba(0,0,0,0.8);
-        color: #d1d1d1;
-        font-size: 14px;
-        padding: 24px;
-      }
-      p {
-        -webkit-app-region: no-drag;
-      }
-      a {
-        text-decoration: none;
-        color: #d1d1d1;
-      }
-    </style>
-  </head>
-  <body>
-    <span>Fetching currently playing lyrics...</span>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    <!-- We are using Node.js <script>document.write(process.versions.node)</script>,
+
+<head>
+  <meta charset="UTF-8">
+  <title>Lyric Sheet</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      -webkit-app-region: drag;
+
+      line-height: 1.5em;
+      background: linear-gradient(0deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .2) 80%, rgba(0, 0, 0, .5)) fixed;
+      color: #f1f1f1;
+      font-size: 14px;
+      padding: 24px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    p,
+    a {
+      -webkit-app-region: no-drag;
+      text-decoration: none;
+      color: #f1f1f1;
+      cursor: default;
+    }
+
+    small {
+      color: #ccc;
+      display: none;
+    }
+  </style>
+
+</head>
+
+<body>
+  <span>Fetching currently playing lyrics...</span>
+  <!-- All of the Node.js APIs are available in this renderer process. -->
+  <!-- We are using Node.js <script>document.write(process.versions.node)</script>,
     Chromium <script>document.write(process.versions.chrome)</script>,
     and Electron <script>document.write(process.versions.electron)</script>. -->
-  </body>
+</body>
 
-  <script>
-    // You can also require other files to run in this process
-    require('./renderer.js')
-  </script>
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js')
+
+</script>
+
 </html>
