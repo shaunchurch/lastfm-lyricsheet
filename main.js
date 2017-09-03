@@ -13,7 +13,9 @@ const createWindow = () => {
     alwaysOnTop: true,
     transparent: true,
     toolbar: true,
-    titleBarStyle: 'hidden-inset'
+    titleBarStyle: 'hidden',
+    darkTheme: true,
+    vibrancy: 'dark'
   });
 
   mainWindow.loadURL(
@@ -79,6 +81,7 @@ const handleStreamingTrack = track => {
     console.log('Scraping', url);
     xray(url, '.lyrics@html')((err, body) => {
       if (err) return updateWindow(errorMsg, track);
+      console.log('Ok.');
       updateWindow(body, track);
     });
   });
