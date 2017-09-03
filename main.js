@@ -70,7 +70,8 @@ ipcMain.on('synchronous-message', (event, arg) => {
 });
 
 const handleStreamingTrack = track => {
-  if (!track || !track.artist || !track.name) return updateWindow(errorMsg, {});
+  if (typeof track === 'undefined') return updateWindow(errorMsg, {});
+  if (!track.artist || !track.name) return updateWindow(errorMsg, {});
   track.artist = track.artist['#text']; // dmo
   track.backgroundImage = getBackgroundImage(track);
   const query = `${track.artist} ${track.name}`;
