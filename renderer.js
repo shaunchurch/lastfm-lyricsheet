@@ -9,9 +9,8 @@ console.log(ipcRenderer.sendSync('synchronous-message', 'ping')); // prints "pon
 ipcRenderer.on('new-track', (event, arg) => {
   window.document.body.innerHTML = '';
   window.document.body.innerHTML =
-    '<strong>' +
     arg.artist +
-    ' - ' +
+    '<br /><strong>' +
     arg.title +
     '</strong><br />' +
     arg.lyrics +
