@@ -5,8 +5,13 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build":
-      "electron-packager . 'Lyric Sheet' --platform=darwin --icon assets/icons/icns/icon.icns --out=./build --overwrite"
+    "build:mac":
+      "electron-packager . 'Lyric Sheet' --platform=darwin --icon assets/icons/icns/icon.icns --out=./build --overwrite",
+    "build:linux":
+      "electron-packager . 'Lyric Sheet' --platform=linux --out=./build --overwrite",
+    "build:windows":
+      "electron-packager . 'Lyric Sheet' --platform=win32 --out=./build --overwrite",
+    "build": "npm run build:mac && npm run build:linux && npm run build:windows"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": ["Electron", "quick", "start", "tutorial", "demo"],
