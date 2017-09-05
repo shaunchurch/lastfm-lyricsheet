@@ -15,7 +15,10 @@ const createWindow = () => {
     toolbar: true,
     titleBarStyle: 'hidden',
     darkTheme: true,
-    vibrancy: 'dark'
+    vibrancy: 'dark',
+    webPreferences: {
+      scrollBounce: true
+    }
   });
 
   mainWindow.loadURL(
@@ -104,5 +107,27 @@ const getBackgroundImage = track => {
 };
 
 // hook up to last fm
+
 lastfmStream.on('nowPlaying', handleStreamingTrack);
+
+lastfmStream.on('lastPlayed', function(track) {
+  console.log('Last played: ' + track.name);
+});
+
+lastfmStream.on('nowPlaying', function(track) {
+  console.log('Now playing: ' + track.name);
+});
+
+lastfmStream.on('scrobbled', function(track) {
+  console.log('Scrobbled: ' + track.name);
+});
+
+lastfmStream.on('stoppedPlaying', function(track) {
+  console.log('Stopped playing: ' + track.name);
+});
+
+lastfmStream.on('error', function(error) {
+  console.log('Error: ' + error.message);
+});
+
 lastfmStream.start();
