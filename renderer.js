@@ -16,6 +16,9 @@ ipcRenderer.on('new-track', (event, arg) => {
     arg.backgroundImage +
     '" /><br />' +
     arg.artist +
+    '<br /><em>' +
+    arg.release +
+    '</em>' +
     '<br /><strong class="title">' +
     arg.title +
     '</strong><br />' +

@@ -77,6 +77,7 @@ const handleStreamingTrack = track => {
   if (!track.artist || !track.name) return updateWindow(errorMsg, {});
   track.artist = track.artist['#text']; // dmo
   track.backgroundImage = getBackgroundImage(track);
+  track.release = getReleaseName(track);
   const query = `${track.artist} ${stripExtras(track.name)}`;
   console.log('Searching for', query);
   genius.search(query).then(res => {
@@ -96,6 +97,7 @@ const updateWindow = (body, track) => {
     lyrics: body,
     artist: track.artist,
     title: track.name,
+    release: track.release,
     backgroundImage: track.backgroundImage
   });
 };
@@ -106,14 +108,19 @@ const getBackgroundImage = track => {
   return image;
 };
 
+const getReleaseName = track => {
+  if (!track.album) return '';
+  return track.album['#text'];
+};
+
 const stripExtras = name => {
   return name
     .toLowerCase()
     .replace('(live)', '')
     .split('-')[0];
 };
-// hook up to last fm
 
+// hook up to last fm
 lastfmStream.on('nowPlaying', handleStreamingTrack);
 
 lastfmStream.on('lastPlayed', function(track) {
