@@ -57,6 +57,8 @@ const Genius = require('genius-api');
 const LastFmNode = require('lastfm').LastFmNode;
 const Xray = require('x-ray');
 const { ipcMain } = require('electron');
+const PouchDB = require('pouchdb');
+const sanitizeHtml = require('sanitize-html');
 
 const genius = new Genius(config.geniusClientAccessToken);
 const lastfm = new LastFmNode({
@@ -67,6 +69,14 @@ const lastfm = new LastFmNode({
 const xray = Xray();
 const lastfmStream = lastfm.stream(config.lastfmUsername);
 const errorMsg = "We can't find that one. Sorry!";
+
+// database
+const db = new PouchDB(app.getPath('userData'));
+
+db.info().then(info => {
+  console.log(info);
+  mainWindow.webContents.send('db-info', info);
+});
 
 ipcMain.on('synchronous-message', (event, arg) => {
   event.returnValue = 'pong';
@@ -83,11 +93,15 @@ const handleStreamingTrack = track => {
   genius.search(query).then(res => {
     let url = res.hits.length > 0 ? res.hits[0].result.url : null;
     if (!url) return updateWindow(errorMsg, track);
+    let geniusId = res.hits[0].result.id;
     console.log('Scraping', url);
     xray(url, '.lyrics@html')((err, body) => {
       if (err) return updateWindow(errorMsg, track);
       console.log('Ok.');
       updateWindow(body, track);
+      if (geniusId) {
+        saveToDatabase(geniusId, url, track, body);
+      }
     });
   });
 };
@@ -99,6 +113,33 @@ const updateWindow = (body, track) => {
     title: track.name,
     release: track.release,
     backgroundImage: track.backgroundImage
+  });
+};
+
+const saveToDatabase = (geniusId, url, track, body) => {
+  const lyric = {
+    _id: '' + geniusId + '',
+    artist: track.artist,
+    release: track.release,
+    title: track.name,
+    lyric: sanitizeLyric(body),
+    url: url,
+    backgroundImage: track.backgroundImage
+  };
+  db
+    .put(lyric)
+    .then(function() {
+      console.log(`Saved ${track.name} to db.`);
+    })
+    .catch(function(err) {
+      if (err.name === 'conflict') {
+        console.log(`${track.name} is already in the database.`);
+      } else {
+        console.log('There was an error', err);
+      }
+    });
+  db.info().then(info => {
+    mainWindow.webContents.send('db-info', info.doc_count);
   });
 };
 
@@ -118,6 +159,12 @@ const stripExtras = name => {
     .toLowerCase()
     .replace('(live)', '')
     .split('-')[0];
+};
+
+const sanitizeLyric = lyric => {
+  return sanitizeHtml(lyric, {
+    allowedTags: ['em']
+  }).trim();
 };
 
 // hook up to last fm

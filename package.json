@@ -5,25 +5,32 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:mac":
-      "electron-packager . 'Lyric Sheet' --platform=darwin --icon assets/icons/icns/icon.icns --out=./build --overwrite",
-    "build:linux":
-      "electron-packager . 'Lyric Sheet' --platform=linux --out=./build --overwrite",
-    "build:windows":
-      "electron-packager . 'Lyric Sheet' --platform=win32 --out=./build --overwrite",
-    "build": "npm run build:mac && npm run build:linux && npm run build:windows"
+    "build:mac": "DEBUG=electron-packager electron-packager . 'Lyric Sheet' --platform=darwin --icon assets/icons/icns/icon.icns --out=./build --overwrite",
+    "build:linux": "electron-packager . 'Lyric Sheet' --platform=linux --out=./build --overwrite",
+    "build:windows": "electron-packager . 'Lyric Sheet' --platform=win32 --out=./build --overwrite",
+    "build": "npm run build:mac && npm run build:linux && npm run build:windows",
+    "postinstall": "./node_modules/.bin/electron-rebuild"
   },
   "repository": "https://github.com/electron/electron-quick-start",
-  "keywords": ["Electron", "quick", "start", "tutorial", "demo"],
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^1.7.5",
-    "electron-packager": "^9.0.1"
+    "electron-packager": "^9.0.1",
+    "electron-rebuild": "^1.6.0"
   },
   "dependencies": {
     "genius-api": "^0.4.1",
     "lastfm": "git+https://git@github.com/shaunchurch/lastfm-node.git",
+    "pouchdb": "^6.3.4",
+    "sanitize-html": "^1.14.1",
     "x-ray": "^2.3.2"
   }
 }

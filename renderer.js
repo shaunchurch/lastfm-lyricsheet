@@ -5,7 +5,10 @@
 // In renderer process (web page).
 const { ipcRenderer } = require('electron');
 console.log(ipcRenderer.sendSync('synchronous-message', 'ping')); // prints "pong"
-
+ipcRenderer.on('db-info', (event, arg) => {
+  console.log(event, arg);
+  window.document.getElementById('dbrecords').innerHTML = arg + ' songs saved.';
+});
 ipcRenderer.on('new-track', (event, arg) => {
   window.document.body.innerHTML = '';
   window.document.body.innerHTML =
@@ -27,6 +30,7 @@ ipcRenderer.on('new-track', (event, arg) => {
     new Date(Date.now()).toLocaleString() +
     '</small>' +
     '</div>' +
+    '<div id="dbrecords"></div>' +
     '<div class="footer">Words:&nbsp;<strong>' +
     arg.lyrics.split(' ').length +
     '</strong></div>';
