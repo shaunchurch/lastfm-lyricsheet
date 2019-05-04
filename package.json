@@ -22,15 +22,14 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^1.7.5",
-    "electron-packager": "^9.0.1",
-    "electron-rebuild": "^1.6.0"
+    "electron": "^5.0.1",
+    "electron-packager": "^13.1.1",
+    "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
     "genius-api": "^0.4.1",
     "lastfm": "git+https://git@github.com/shaunchurch/lastfm-node.git",
-    "pouchdb": "^6.3.4",
-    "sanitize-html": "^1.14.1",
-    "x-ray": "^2.3.2"
+    "sanitize-html": "^1.20.1",
+    "x-ray": "^2.3.3"
   }
 }
