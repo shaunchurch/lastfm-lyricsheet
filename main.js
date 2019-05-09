@@ -7,6 +7,7 @@ const LastFmNode = require("lastfm").LastFmNode;
 const Xray = require("x-ray");
 const { ipcMain } = require("electron");
 const sanitizeHtml = require("sanitize-html");
+const isDev = require("electron-is-dev");
 
 let mainWindow;
 
@@ -26,7 +27,12 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.loadFile("index.html");
+  mainWindow.loadURL(
+    isDev
+      ? "http://localhost:3000"
+      : `file://${path.join(__dirname, "../build/index.html")}`
+  );
+
   mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
@@ -125,6 +131,7 @@ const sanitizeLyric = lyric => {
 lastfmStream.on("nowPlaying", handleStreamingTrack);
 
 lastfmStream.on("lastPlayed", function(track) {
+  handleStreamingTrack(track);
   console.log("Last played: " + track.name);
 });
 

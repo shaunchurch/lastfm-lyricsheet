@@ -3,14 +3,12 @@
 // All of the Node.js APIs are available in this process.
 
 // In renderer process (web page).
-const { ipcRenderer } = require('electron');
-console.log(ipcRenderer.sendSync('synchronous-message', 'ping')); // prints "pong"
-ipcRenderer.on('db-info', (event, arg) => {
-  console.log(event, arg);
-  window.document.getElementById('dbrecords').innerHTML = arg + ' songs saved.';
-});
-ipcRenderer.on('new-track', (event, arg) => {
-  window.document.body.innerHTML = '';
+const { ipcRenderer } = require("electron");
+
+console.log(ipcRenderer.sendSync("synchronous-message", "ping")); // prints "pong"
+
+ipcRenderer.on("new-track", (event, arg) => {
+  window.document.body.innerHTML = "";
   window.document.body.innerHTML =
     '<div class="background-art"></div>' +
     '<div class="background-gradient"></div>' +
@@ -19,37 +17,38 @@ ipcRenderer.on('new-track', (event, arg) => {
     arg.backgroundImage +
     '" /><br />' +
     arg.artist +
-    '<br /><em>' +
+    "<br /><em>" +
     arg.release +
-    '</em>' +
+    "</em>" +
     '<br /><strong class="title">' +
     arg.title +
-    '</strong><br />' +
+    "</strong><br />" +
     arg.lyrics +
-    '<br /><small>' +
+    "<br /><small>" +
     new Date(Date.now()).toLocaleString() +
-    '</small>' +
-    '</div>' +
+    "</small>" +
+    "</div>" +
     '<div id="dbrecords"></div>' +
     '<div class="footer">Words:&nbsp;<strong>' +
-    arg.lyrics.split(' ').length +
-    '</strong></div>';
-  window.document.title = arg.artist + ' - ' + arg.title + ' lyrics';
+    arg.lyrics.split(" ").length +
+    "</strong></div>";
+
+  window.document.title = arg.artist + " - " + arg.title + " lyrics";
 
   // background image
   document.getElementsByClassName(
-    'background-art'
+    "background-art"
   )[0].style.backgroundImage = `url(${arg.backgroundImage})`;
 
   // ignore anchors
   ignoreAnchors();
 
   // scroll to the top
-  document.location.href = '#top';
+  document.location.href = "#top";
 });
 
 const ignoreAnchors = () => {
-  var anchors = document.getElementsByTagName('a');
+  var anchors = document.getElementsByTagName("a");
   for (var i = 0; i < anchors.length; i++) {
     anchors[i].onclick = function() {
       // window.open(this.getAttribute('href'), '_blank');
@@ -58,4 +57,4 @@ const ignoreAnchors = () => {
   }
 };
 
-ipcRenderer.send('asynchronous-message', 'ping');
+ipcRenderer.send("asynchronous-message", "ping");
