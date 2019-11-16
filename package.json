@@ -2,13 +2,14 @@
   "name": "electron-next-skeleton",
   "productName": "ElectronTypescriptNext",
   "version": "1.0.0",
-  "main": "main/index.js",
+  "main": "main/electron-src/index.js",
   "scripts": {
     "start": "electron .",
     "build-renderer": "next build renderer && next export renderer",
     "build-electron": "tsc -p electron-src",
-    "build": "yarn build-renderer && yarn build-electron",
+    "build": "npm run clean && npm run build-renderer && npm run build-electron",
     "dist": "npm run build && electron-builder --dir",
+    "clean": "rm -rf ./main && rm -rf ./renderer/out",
     "type-check": "tsc"
   },
   "build": {
@@ -36,8 +37,11 @@
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "electron-store": "^5.1.0",
+    "genius-api": "^0.4.1",
+    "lastfm": "^0.9.3",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
+    "sanitize-html": "^1.20.1",
     "styled-components": "^4.4.1"
   }
 }
