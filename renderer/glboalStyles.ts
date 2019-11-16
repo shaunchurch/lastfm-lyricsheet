@@ -9,10 +9,17 @@ export const theme = {
 };
 
 export const GlobalStyle = createGlobalStyle`
+
+  html,
+  body
+  #__next {
+    min-height: 100vh; 
+    -webkit-app-region: drag;
+  }
+
   body {
     color: ${p => p.theme.foreground};
     font-family: ${props => props.theme.fontFamily};
-    background: ${p => p.theme.background};
     margin: 0;
     padding: 0;
   }

@@ -6,11 +6,13 @@ import { GlobalStyle } from "../glboalStyles";
 
 type Props = {
   title?: string;
+  backgroundImage?: string;
 };
 
 const Layout: React.FunctionComponent<Props> = ({
   children,
-  title = "This is the default title"
+  title = "This is the default title",
+  backgroundImage = ""
 }) => (
   <>
     <Head>
@@ -19,8 +21,12 @@ const Layout: React.FunctionComponent<Props> = ({
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     </Head>
     <S.PageBody>
+      <S.BackgroundStyle backgroundImage={backgroundImage} />
       <header>
         <nav>
+          <Link href="/">
+            <a>Lyrics</a>
+          </Link>{" "}
           <Link href="/settings">
             <a>Settings</a>
           </Link>
