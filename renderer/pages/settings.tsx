@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Layout from "../components/Layout";
+import * as S from "./Settings.styles";
 
 interface Settings {
   geniusClientAccessToken?: string;
@@ -36,45 +37,44 @@ const SettingsPage: React.FunctionComponent = () => {
   return (
     <Layout title="Lyric Sheet Settings">
       <h1>Settings</h1>
-      token: {settings?.geniusClientAccessToken}
       <p>Configure your API keys and username.</p>
       <form onSubmit={handleSubmit}>
-        <label>
-          Genius API Key
+        <S.Label>
+          <span>Genius API Key</span>
           <input
             type="text"
             name="geniusClientAccessToken"
             value={settings?.geniusClientAccessToken || ""}
             onChange={handleChange}
           />
-        </label>
-        <label>
-          Lastfm API Key
+        </S.Label>
+        <S.Label>
+          <span>Lastfm API Key</span>
           <input
             type="text"
             name="lastfmApiKey"
             value={settings?.lastfmApiKey || ""}
             onChange={handleChange}
           />
-        </label>
-        <label>
-          Lastfm Secret
+        </S.Label>
+        <S.Label>
+          <span>Lastfm Secret</span>
           <input
             type="text"
             name="lastfmSecret"
             value={settings?.lastfmSecret || ""}
             onChange={handleChange}
           />
-        </label>
-        <label>
-          Lastfm Username
+        </S.Label>
+        <S.Label>
+          <span>Lastfm Username</span>
           <input
             type="text"
             name="lastfmUsername"
             value={settings?.lastfmUsername || ""}
             onChange={handleChange}
           />
-        </label>
+        </S.Label>
         <button>Save</button>
       </form>
       <p>

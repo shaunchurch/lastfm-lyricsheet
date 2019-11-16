@@ -26,6 +26,7 @@
     "@types/node": "^12.12.7",
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.4",
+    "@types/styled-components": "^4.4.0",
     "electron": "^7.1.1",
     "electron-builder": "^22.1.0",
     "next": "latest",
@@ -36,6 +37,7 @@
     "electron-next": "^3.1.5",
     "electron-store": "^5.1.0",
     "react": "^16.11.0",
-    "react-dom": "^16.11.0"
+    "react-dom": "^16.11.0",
+    "styled-components": "^4.4.1"
   }
 }

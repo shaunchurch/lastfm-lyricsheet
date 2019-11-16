@@ -10,7 +10,7 @@ const IndexPage: NextPage = () => {
 
   return (
     <Layout title="Lyric Sheet">
-      <h1>Lyrics Screen</h1>
+      <h1>Main</h1>
     </Layout>
   );
 };

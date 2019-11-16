@@ -10,3 +10,16 @@ declare global {
     }
   }
 }
+
+import "styled-components";
+
+// and extend them!
+declare module "styled-components" {
+  export interface DefaultTheme {
+    foreground: string;
+    background: string;
+    fontFamily: string;
+    padding: number;
+    radius: number;
+  }
+}
