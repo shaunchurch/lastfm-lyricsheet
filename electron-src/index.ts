@@ -1,24 +1,32 @@
-// Native
 import { join } from "path";
 import { format } from "url";
 
-// Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
+import { BrowserWindow, app } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
-import Store from "electron-store";
-const store = new Store();
+import { ipc } from "./ipc";
+import { connectLastFM } from "./lastfm";
+import Settings from "../interfaces/Settings";
+import LastFmTrack from "../interfaces/LastFmTrack";
+import Track from "../interfaces/Track";
+
+import * as sanitise from "./sanitise";
 
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
   await prepareNext("./renderer");
 
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 600,
+    height: 800,
+    transparent: true,
+    darkTheme: true,
+    vibrancy: "dark",
+    titleBarStyle: "hidden",
     webPreferences: {
       nodeIntegration: false,
-      preload: join(__dirname, "preload.js")
+      preload: join(__dirname, "preload.js"),
+      scrollBounce: true
     }
   });
 
@@ -31,22 +39,31 @@ app.on("ready", async () => {
       });
 
   mainWindow.loadURL(url);
+
+  async function handleTrackPlayed(lastFmTrack: LastFmTrack) {
+    if (typeof lastFmTrack === "undefined")
+      throw new Error("No lastFmTrack avaiable");
+    if (!lastFmTrack.artist || !lastFmTrack.name)
+      throw new Error("No artist or track name on lastFmTrack");
+
+    const track: Track = {
+      name: sanitise.stripExtras(lastFmTrack.name),
+      artist: lastFmTrack.artist["#text"],
+      album: sanitise.getAlbumName(lastFmTrack),
+      backgroundImage: sanitise.getBackgroundImage(lastFmTrack)
+    };
+
+    // const query = `${track.artist} ${track.name}`;
+
+    mainWindow.webContents.send("track", track);
+  }
+
+  function onLoadedSettings(settings: Settings) {
+    connectLastFM(settings, handleTrackPlayed);
+  }
+
+  ipc(onLoadedSettings);
 });
 
 // Quit the app once all windows are closed
 app.on("window-all-closed", app.quit);
-
-ipcMain.on("req-settings", (event: IpcMainEvent, message: any) => {
-  event.reply("rec-settings", store.get("settings"));
-  console.log(message);
-});
-
-ipcMain.on("save-settings", (event: IpcMainEvent, message: any) => {
-  try {
-    console.log("Saving settings...", message);
-    store.set("settings", message);
-  } catch (e) {
-    console.error(e);
-    event.reply("save-settings", e);
-  }
-});
