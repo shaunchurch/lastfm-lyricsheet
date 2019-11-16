@@ -1,25 +1,21 @@
 import * as React from "react";
-import Link from "next/link";
 import Layout from "../components/Layout";
-import * as S from "./Settings.styles";
-
-interface Settings {
-  geniusClientAccessToken?: string;
-  lastfmApiKey?: string;
-  lastfmSecret?: string;
-  lastfmUsername?: string;
-}
+import * as S from "../styles/Settings.styles";
+import Settings from "../../interfaces/Settings";
 
 const SettingsPage: React.FunctionComponent = () => {
   const [settings, setSettings] = React.useState<Settings>();
 
   React.useEffect(() => {
-    global.ipcRenderer.on("rec-settings", handleGetSettings);
+    global.ipcRenderer.on("res-settings", handleResSettings);
     global.ipcRenderer.send("req-settings", true);
+    return () => {
+      global.ipcRenderer.off("res-settings", handleResSettings);
+    };
   }, []);
 
-  function handleGetSettings(_event: any, settings: Settings) {
-    console.log("Loaded settings", settings);
+  function handleResSettings(_event: any, settings: Settings) {
+    console.log("Loaded settings");
     setSettings(settings);
   }
 
@@ -31,7 +27,7 @@ const SettingsPage: React.FunctionComponent = () => {
 
   function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
-    global.ipcRenderer.send("save-settings", settings);
+    global.ipcRenderer.send("req-save-settings", settings);
   }
 
   return (
@@ -42,7 +38,7 @@ const SettingsPage: React.FunctionComponent = () => {
         <S.Label>
           <span>Genius API Key</span>
           <input
-            type="text"
+            type="password"
             name="geniusClientAccessToken"
             value={settings?.geniusClientAccessToken || ""}
             onChange={handleChange}
@@ -51,7 +47,7 @@ const SettingsPage: React.FunctionComponent = () => {
         <S.Label>
           <span>Lastfm API Key</span>
           <input
-            type="text"
+            type="password"
             name="lastfmApiKey"
             value={settings?.lastfmApiKey || ""}
             onChange={handleChange}
@@ -60,7 +56,7 @@ const SettingsPage: React.FunctionComponent = () => {
         <S.Label>
           <span>Lastfm Secret</span>
           <input
-            type="text"
+            type="password"
             name="lastfmSecret"
             value={settings?.lastfmSecret || ""}
             onChange={handleChange}
@@ -77,11 +73,6 @@ const SettingsPage: React.FunctionComponent = () => {
         </S.Label>
         <button>Save</button>
       </form>
-      <p>
-        <Link href="/">
-          <a>Go home</a>
-        </Link>
-      </p>
     </Layout>
   );
 };
