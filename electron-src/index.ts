@@ -6,6 +6,7 @@ import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 import { ipc } from "./ipc";
 import { connectLastFM } from "./lastfm";
+import { configureGenius, searchGenius } from "./genius";
 import Settings from "../interfaces/Settings";
 import LastFmTrack from "../interfaces/LastFmTrack";
 import Track from "../interfaces/Track";
@@ -47,19 +48,46 @@ app.on("ready", async () => {
       throw new Error("No artist or track name on lastFmTrack");
 
     const track: Track = {
-      name: sanitise.stripExtras(lastFmTrack.name),
+      name: lastFmTrack.name,
       artist: lastFmTrack.artist["#text"],
       album: sanitise.getAlbumName(lastFmTrack),
       backgroundImage: sanitise.getBackgroundImage(lastFmTrack)
     };
 
-    // const query = `${track.artist} ${track.name}`;
+    const query = `${track.artist} ${sanitise.stripExtras(track.name)}`;
+
+    try {
+      const lyrics = await searchGenius(query);
+      mainWindow.webContents.send("lyrics", lyrics);
+    } catch (e) {
+      console.error(e);
+      handleError(e.message);
+    }
 
     mainWindow.webContents.send("track", track);
   }
 
+  function handleError(error: string) {
+    mainWindow.webContents.send("error", error);
+  }
+
   function onLoadedSettings(settings: Settings) {
-    connectLastFM(settings, handleTrackPlayed);
+    if (
+      settings &&
+      settings.lastfmApiKey &&
+      settings.lastfmSecret &&
+      settings.lastfmUsername
+    ) {
+      connectLastFM(settings, handleTrackPlayed, handleError);
+    }
+
+    if (settings && settings.geniusClientAccessToken) {
+      configureGenius(settings);
+    }
+
+    if (typeof settings === "undefined") {
+      mainWindow.webContents.send("settings-required", true);
+    }
   }
 
   ipc(onLoadedSettings);
