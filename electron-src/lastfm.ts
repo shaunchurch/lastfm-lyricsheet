@@ -1,11 +1,13 @@
 import Settings from "../interfaces/Settings";
+import LastFmTrack from "../interfaces/LastFmTrack";
 const LastFmNode = require("lastfm").LastFmNode;
 
 let lastfmStream: any;
 
 export function connectLastFM(
   settings: Settings,
-  onTrackPlayed: Function,
+  onNowPlaying: Function,
+  onLastPlayed: Function,
   onError: Function
 ) {
   if (lastfmStream && lastfmStream.isStreaming()) {
@@ -22,10 +24,8 @@ export function connectLastFM(
 
   function startStream() {
     lastfmStream = lastfm.stream(settings.lastfmUsername);
-    lastfmStream.on("nowPlaying", handleStreamingTrack);
-    lastfmStream.on("lastPlayed", (data: any) =>
-      handleLoggedEvent("lastPlayed", data)
-    );
+    lastfmStream.on("nowPlaying", handleNowPlaying);
+    lastfmStream.on("lastPlayed", handleLastPlayed);
     lastfmStream.on("nowPlaying", (data: any) =>
       handleLoggedEvent("nowPlaying", data)
     );
@@ -44,16 +44,18 @@ export function connectLastFM(
     lastfmStream = null;
   }
 
-  function handleStreamingTrack(track: any) {
-    onTrackPlayed(track);
+  function handleNowPlaying(track: LastFmTrack) {
+    onNowPlaying(track);
+  }
+
+  function handleLastPlayed(track: LastFmTrack) {
+    onLastPlayed(track);
   }
 
   function handleLoggedEvent(event: string, data: any) {
-    console.log("Log", event, "-", data);
-    if (event === "lastPlayed") {
-      onTrackPlayed(data);
-    }
+    console.log("Log", event);
     if (event === "error") {
+      console.log("Error", data);
       onError(data.message);
     }
   }

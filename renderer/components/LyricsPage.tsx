@@ -6,12 +6,27 @@ import * as S from "./LyricsPage.styles";
 import * as G from "../globalStyles";
 
 interface Props {
-  currentTrack?: Track;
-  lyrics?: string;
+  nowPlayingTrack?: Track;
+  nowPlayingLyrics?: string;
+  lastPlayedTrack?: Track;
+  lastPlayedLyrics?: string;
   error?: string;
 }
 
-export default function LyricsPage({ currentTrack, lyrics, error }: Props) {
+export default function LyricsPage({
+  nowPlayingTrack,
+  nowPlayingLyrics,
+  lastPlayedTrack,
+  lastPlayedLyrics,
+  error
+}: Props) {
+  const currentTrack = nowPlayingTrack?.artist
+    ? nowPlayingTrack
+    : lastPlayedTrack;
+
+  const currentLyrics =
+    nowPlayingLyrics !== "" ? nowPlayingLyrics : lastPlayedLyrics;
+
   useEffect(() => {
     let main = document.getElementsByTagName("main");
     var anchors = main[0].getElementsByTagName("a");
@@ -21,7 +36,7 @@ export default function LyricsPage({ currentTrack, lyrics, error }: Props) {
         return false;
       };
     }
-  }, [lyrics]);
+  }, [currentLyrics]);
 
   if (error !== "") {
     return (
@@ -52,7 +67,7 @@ export default function LyricsPage({ currentTrack, lyrics, error }: Props) {
             <S.Name>{currentTrack?.name}</S.Name>
           </S.SongHeaderMeta>
         </S.SongHeader>
-        <S.Lyrics dangerouslySetInnerHTML={{ __html: lyrics || "" }} />
+        <S.Lyrics dangerouslySetInnerHTML={{ __html: currentLyrics || "" }} />
       </S.LyricWrapper>
     </Layout>
   );

@@ -34,14 +34,14 @@ app.on("ready", async () => {
   const url = isDev
     ? "http://localhost:8000/"
     : format({
-        pathname: join(__dirname, "../renderer/index.html"),
+        pathname: join(__dirname, "../../renderer/out/index.html"),
         protocol: "file:",
         slashes: true
       });
 
   mainWindow.loadURL(url);
 
-  async function handleTrackPlayed(lastFmTrack: LastFmTrack) {
+  function createTrack(lastFmTrack: LastFmTrack): Track {
     if (typeof lastFmTrack === "undefined")
       throw new Error("No lastFmTrack avaiable");
     if (!lastFmTrack.artist || !lastFmTrack.name)
@@ -53,18 +53,37 @@ app.on("ready", async () => {
       album: sanitise.getAlbumName(lastFmTrack),
       backgroundImage: sanitise.getBackgroundImage(lastFmTrack)
     };
+    return track;
+  }
 
-    const query = `${track.artist} ${sanitise.stripExtras(track.name)}`;
+  function createQuery(track: Track) {
+    return `${track.artist} ${sanitise.stripExtras(track.name)}`;
+  }
 
+  async function handleNowPlaying(lastFmTrack: LastFmTrack) {
+    const track = createTrack(lastFmTrack);
+    const query = createQuery(track);
+    const lyrics = await searchGenius(query);
     try {
-      const lyrics = await searchGenius(query);
-      mainWindow.webContents.send("lyrics", lyrics);
+      mainWindow.webContents.send("nowPlayingLyrics", lyrics);
+      mainWindow.webContents.send("nowPlayingTrack", track);
     } catch (e) {
       console.error(e);
       handleError(e.message);
     }
+  }
 
-    mainWindow.webContents.send("track", track);
+  async function handleLastPlayed(lastFmTrack: LastFmTrack) {
+    const track = createTrack(lastFmTrack);
+    const query = createQuery(track);
+    const lyrics = await searchGenius(query);
+    try {
+      mainWindow.webContents.send("lastPlayedLyrics", lyrics);
+      mainWindow.webContents.send("lastPlayedTrack", track);
+    } catch (e) {
+      console.error(e);
+      handleError(e.message);
+    }
   }
 
   function handleError(error: string) {
@@ -78,7 +97,7 @@ app.on("ready", async () => {
       settings.lastfmSecret &&
       settings.lastfmUsername
     ) {
-      connectLastFM(settings, handleTrackPlayed, handleError);
+      connectLastFM(settings, handleNowPlaying, handleLastPlayed, handleError);
     }
 
     if (settings && settings.geniusClientAccessToken) {
