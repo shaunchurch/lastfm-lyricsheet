@@ -1,10 +1,13 @@
 import * as React from "react";
+import Router from "next/router";
 import Layout from "../components/Layout";
 import * as S from "../styles/Settings.styles";
+import * as G from "../globalStyles";
 import Settings from "../../interfaces/Settings";
 
 const SettingsPage: React.FunctionComponent = () => {
   const [settings, setSettings] = React.useState<Settings>();
+  const [error, setError] = React.useState<string>();
 
   React.useEffect(() => {
     global.ipcRenderer.on("res-settings", handleResSettings);
@@ -27,7 +30,37 @@ const SettingsPage: React.FunctionComponent = () => {
 
   function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!validateSettings(settings)) {
+      return setError("Please enter all the required settings.");
+    }
+
+    setError(undefined);
     global.ipcRenderer.send("req-save-settings", settings);
+    Router.push("/");
+  }
+
+  function validateSettings(settings: Settings | undefined): boolean {
+    if (typeof settings === "undefined" || settings === null) {
+      return false;
+    }
+
+    let valid = false;
+    if (
+      isSettingValid(settings.geniusClientAccessToken || "") &&
+      isSettingValid(settings.lastfmSecret || "") &&
+      isSettingValid(settings.lastfmApiKey || "") &&
+      isSettingValid(settings.lastfmUsername || "")
+    ) {
+      valid = true;
+    }
+    return valid;
+  }
+
+  function isSettingValid(setting: string) {
+    if (setting !== "") {
+      return true;
+    }
+    return false;
   }
 
   return (
@@ -36,7 +69,7 @@ const SettingsPage: React.FunctionComponent = () => {
       <p>Configure your API keys and username.</p>
       <form onSubmit={handleSubmit}>
         <S.Label>
-          <span>Genius API Key</span>
+          <span>Genius Client Access Token</span>
           <input
             type="password"
             name="geniusClientAccessToken"
@@ -45,7 +78,7 @@ const SettingsPage: React.FunctionComponent = () => {
           />
         </S.Label>
         <S.Label>
-          <span>Lastfm API Key</span>
+          <span>Last.fm API Key</span>
           <input
             type="password"
             name="lastfmApiKey"
@@ -54,7 +87,7 @@ const SettingsPage: React.FunctionComponent = () => {
           />
         </S.Label>
         <S.Label>
-          <span>Lastfm Secret</span>
+          <span>Last.fm Secret</span>
           <input
             type="password"
             name="lastfmSecret"
@@ -63,7 +96,7 @@ const SettingsPage: React.FunctionComponent = () => {
           />
         </S.Label>
         <S.Label>
-          <span>Lastfm Username</span>
+          <span>Last.fm Username</span>
           <input
             type="text"
             name="lastfmUsername"
@@ -71,7 +104,8 @@ const SettingsPage: React.FunctionComponent = () => {
             onChange={handleChange}
           />
         </S.Label>
-        <button>Save</button>
+        {error && <G.Error>{error}</G.Error>}
+        <G.Button>Save</G.Button>
       </form>
     </Layout>
   );
