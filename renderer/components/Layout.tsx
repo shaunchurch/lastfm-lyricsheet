@@ -2,7 +2,8 @@ import * as React from "react";
 import Link from "next/link";
 import Head from "next/head";
 import * as S from "./Layout.styles";
-import { GlobalStyle } from "../glboalStyles";
+import { GlobalStyle } from "../globalStyles";
+import { MdSettings } from "react-icons/md";
 
 type Props = {
   title?: string;
@@ -23,16 +24,15 @@ const Layout: React.FunctionComponent<Props> = ({
     <S.PageBody>
       <S.BackgroundStyle backgroundImage={backgroundImage} />
       <header>
-        <nav>
-          <Link href="/">
-            <a>Lyrics</a>
-          </Link>{" "}
+        <S.SettingsIcon>
           <Link href="/settings">
-            <a>Settings</a>
+            <a>
+              <MdSettings />
+            </a>
           </Link>
-        </nav>
+        </S.SettingsIcon>
       </header>
-      {children}
+      <main>{children}</main>
     </S.PageBody>
     <GlobalStyle />
   </>

@@ -2,6 +2,9 @@ import styled from "styled-components";
 
 export const PageBody = styled.div`
   min-height: 100vh;
+  margin-top: ${p => p.theme.padding * 6}px;
+  padding-left: ${p => p.theme.padding * 3}px;
+  padding-right: ${p => p.theme.padding * 3}px;
 `;
 
 interface BackgroundStyleProps {
@@ -30,4 +33,10 @@ export const BackgroundStyle = styled.div`
   background-position: center;
   background-attachment: fixed;
   opacity: 0.2;
+`;
+
+export const SettingsIcon = styled.nav`
+  position: absolute;
+  top: ${p => p.theme.padding * 2}px;
+  right: ${p => p.theme.padding * 2}px;
 `;
