@@ -1,8 +1,9 @@
 {
   "name": "electron-next-skeleton",
-  "productName": "ElectronTypescriptNext",
+  "productName": "LyricSheet",
   "version": "1.0.0",
   "main": "main/electron-src/index.js",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
     "build-renderer": "next build renderer && next export renderer",
@@ -41,7 +42,9 @@
     "lastfm": "^0.9.3",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
+    "react-icons": "^3.8.0",
     "sanitize-html": "^1.20.1",
-    "styled-components": "^4.4.1"
+    "styled-components": "^4.4.1",
+    "x-ray": "^2.3.4"
   }
 }
