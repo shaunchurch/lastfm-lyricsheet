@@ -9,7 +9,6 @@ const IndexPage: NextPage = () => {
   const [lastPlayedTrack, setLastPlayedTrack] = React.useState<Track>();
   const [nowPlayingLyrics, setNowPlayingLyrics] = React.useState<string>("");
   const [lastPlayedLyrics, setLastPlayedLyrics] = React.useState<string>("");
-
   const [error, setError] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -24,7 +23,6 @@ const IndexPage: NextPage = () => {
       setError("");
       window.scrollTo(0, 0);
     });
-
     global.ipcRenderer.on("lastPlayedTrack", (_event: any, track: Track) => {
       setLastPlayedTrack(track);
       setError("");
@@ -35,7 +33,6 @@ const IndexPage: NextPage = () => {
       setError("");
       window.scrollTo(0, 0);
     });
-
     global.ipcRenderer.on("settings-required", (_event: any, _data) => {
       Router.push("/settings");
     });
