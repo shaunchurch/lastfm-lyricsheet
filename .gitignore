@@ -2,3 +2,4 @@ node_modules
 main
 renderer/.next
 renderer/out
+dist
