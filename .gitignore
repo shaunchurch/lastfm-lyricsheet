@@ -3,3 +3,4 @@ main
 renderer/.next
 renderer/out
 dist
+.DS_Store
