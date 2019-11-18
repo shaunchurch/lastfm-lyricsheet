@@ -20,7 +20,12 @@
         "from": "renderer/out",
         "to": "app/renderer"
       }
-    ]
+    ],
+    "appId": "com.lyricsheet",
+    "mac": {
+      "icon": "icons/mac/icon.icns",
+      "darkModeSupport": true
+    }
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.6.0",
