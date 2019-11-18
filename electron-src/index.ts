@@ -1,6 +1,5 @@
 import { join } from "path";
 import { format } from "url";
-
 import { BrowserWindow, app } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
@@ -10,10 +9,8 @@ import { configureGenius, searchGenius } from "./genius";
 import Settings from "../interfaces/Settings";
 import LastFmTrack from "../interfaces/LastFmTrack";
 import Track from "../interfaces/Track";
-
 import * as sanitise from "./sanitise";
 
-// Prepare the renderer once the app is ready
 app.on("ready", async () => {
   await prepareNext("./renderer");
 
@@ -53,6 +50,7 @@ app.on("ready", async () => {
       album: sanitise.getAlbumName(lastFmTrack),
       backgroundImage: sanitise.getBackgroundImage(lastFmTrack)
     };
+
     return track;
   }
 
@@ -112,5 +110,4 @@ app.on("ready", async () => {
   ipc(onLoadedSettings);
 });
 
-// Quit the app once all windows are closed
 app.on("window-all-closed", app.quit);
