@@ -3,7 +3,11 @@ const LastFmNode = require("lastfm").LastFmNode;
 
 let lastfmStream: any;
 
-export function connectLastFM(settings: Settings, onTrackPlayed: Function) {
+export function connectLastFM(
+  settings: Settings,
+  onTrackPlayed: Function,
+  onError: Function
+) {
   if (lastfmStream && lastfmStream.isStreaming()) {
     stopStream();
   }
@@ -41,14 +45,16 @@ export function connectLastFM(settings: Settings, onTrackPlayed: Function) {
   }
 
   function handleStreamingTrack(track: any) {
-    console.log("track playing", track);
     onTrackPlayed(track);
   }
 
   function handleLoggedEvent(event: string, data: any) {
-    console.log(event, "-", data.artist);
+    console.log("Log", event, "-", data);
     if (event === "lastPlayed") {
       onTrackPlayed(data);
+    }
+    if (event === "error") {
+      onError(data.message);
     }
   }
 
