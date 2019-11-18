@@ -1,7 +1,7 @@
 {
   "name": "electron-next-skeleton",
   "productName": "LyricSheet",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "main/electron-src/index.js",
   "license": "MIT",
   "scripts": {
@@ -11,10 +11,11 @@
     "build": "npm run clean && npm run build-renderer && npm run build-electron",
     "dist": "npm run build && electron-builder --dir",
     "clean": "rm -rf ./main && rm -rf ./renderer/out",
+    "publish": "electron-builder --publish always --mac --linux",
+    "release": "npm run dist && npm run publish ",
     "type-check": "tsc"
   },
   "build": {
-    "asar": false,
     "extraResources": [
       {
         "from": "renderer/out",
@@ -25,7 +26,11 @@
     "mac": {
       "icon": "icons/mac/icon.icns",
       "darkModeSupport": true
-    }
+    },
+    "win": {
+      "icon": "icons/windows/icon.png"
+    },
+    "linux": {}
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.6.0",
