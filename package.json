@@ -53,7 +53,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-icons": "^3.8.0",
-    "sanitize-html": "^1.20.1",
+    "sanitize-html": "^2.3.2",
     "styled-components": "^4.4.1",
     "x-ray": "^2.3.4"
   }
