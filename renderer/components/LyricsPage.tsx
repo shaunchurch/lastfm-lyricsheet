@@ -18,7 +18,7 @@ export default function LyricsPage({
   nowPlayingLyrics,
   lastPlayedTrack,
   lastPlayedLyrics,
-  error
+  error,
 }: Props) {
   const currentTrack = nowPlayingTrack?.artist
     ? nowPlayingTrack
@@ -31,12 +31,14 @@ export default function LyricsPage({
     let main = document.getElementsByTagName("main");
     var anchors = main[0].getElementsByTagName("a");
     for (var i = 0; i < anchors.length; i++) {
-      anchors[i].onclick = function() {
+      anchors[i].onclick = function () {
         // window.open(this.getAttribute('href'), '_blank');
         return false;
       };
     }
   }, [currentLyrics]);
+
+  console.log(nowPlayingTrack);
 
   if (error !== "") {
     return (
