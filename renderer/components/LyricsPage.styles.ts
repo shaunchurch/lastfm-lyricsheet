@@ -29,7 +29,7 @@ export const Artwork = styled.img`
   margin-bottom: 12px;
   border: 0;
   outline: 0;
-  margin-right: ${p => p.theme.padding * 3}px;
+  margin-right: ${(p) => p.theme.padding * 3}px;
 `;
 
 export const Lyrics = styled.div`
@@ -41,6 +41,8 @@ export const Lyrics = styled.div`
     color: #f1f1f1;
     cursor: default;
   }
+  margin-top: 24px;
+  margin-bottom: 48px;
 `;
 
 export const SongHeader = styled.header`
