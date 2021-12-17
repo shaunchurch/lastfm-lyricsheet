@@ -13,13 +13,12 @@ git clone git@github.com:shaunchurch/lastfm-lyricsheet.git
 cd lastfm-lyricsheet
 # Install dependencies
 npm install
-# Build
+# Build the node side
 npm run build
-# Run the dev electron server
+# Run the dev electron server with hot reload for the front end
 npm start
 ```
 
-## Build app commands
+## Build app binary
 
-`npm run build`
 `npm run dist`
