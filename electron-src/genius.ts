@@ -18,15 +18,17 @@ export async function searchGenius(query: string) {
     if (!url) throw new Error("No url returned in search.");
 
     let geniusId = res.hits[0].result.id;
-    console.log("Scraping", url, geniusId);
+    console.log("Scraping", url, geniusId, res.hits[0]);
 
     x(
       url,
-      ".lyrics@html"
+      // ".lyrics@html"
+      ["[data-lyrics-container]@html"]
     )((err: any, body: any) => {
       if (err) reject(err);
-      console.log("Ok.");
-      resolve(body);
+      console.log("Ok.", body.length);
+      const lyrics = body.join("\n");
+      resolve(lyrics);
     });
   });
 }
