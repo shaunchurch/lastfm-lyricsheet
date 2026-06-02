@@ -39,12 +39,12 @@ body {
 .artwork-backdrop {
   pointer-events: none;
   position: absolute;
-  inset: -18%;
+  inset: -10%;
   z-index: 0;
   background-position: center;
   background-size: cover;
-  filter: blur(34px) saturate(1.15);
-  opacity: 0.22;
+  filter: blur(20px) saturate(1.22);
+  opacity: 0.42;
   transform: scale(1.04);
 }
 
@@ -55,7 +55,12 @@ body {
   z-index: 1;
   background:
     radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.07), transparent 28%),
-    linear-gradient(180deg, rgba(5, 8, 9, 0.54), rgba(5, 8, 9, 0.78));
+    linear-gradient(
+      0deg,
+      rgba(0, 0, 15, 0.64),
+      rgba(0, 0, 15, 0.32) 42%,
+      rgba(0, 0, 15, 0.62)
+    );
 }
 
 .window-controls {
