@@ -1,24 +1,32 @@
 # Last.fm Lyric Sheet
 
-A tiny app to display lyrics for the song you're currently scrobbling to last.fm.
+A tiny always-on desktop lyric sheet for the song you're currently scrobbling to Last.fm.
 
 ![Lyric Sheet](https://i.imgur.com/Ckhqb83.png)
 
-## To Develop
+## Develop
 
 ```bash
-# Clone this repository
-git clone git@github.com:shaunchurch/lastfm-lyricsheet.git
-# Go into the repository
-cd lastfm-lyricsheet
-# Install dependencies
-npm install
-# Build the node side
-npm run build
-# Run the dev electron server with hot reload for the front end
-npm start
+pnpm install
+pnpm dev
 ```
 
-## Build app binary
+## Build
 
-`npm run dist`
+```bash
+pnpm package
+pnpm make
+```
+
+`pnpm make` creates a macOS ZIP by default. Use `pnpm make:dmg` on a local machine
+or CI runner that supports `hdiutil` disk image creation.
+
+## Setup
+
+LyricSheet currently needs:
+
+- Last.fm API key
+- Last.fm username
+- Genius access token for search
+
+Lyrics are still fetched locally by scraping the matched Genius page.

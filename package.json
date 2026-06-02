@@ -1,60 +1,56 @@
 {
-  "name": "electron-next-skeleton",
+  "name": "lastfm-lyricsheet",
   "productName": "LyricSheet",
-  "version": "0.1.0",
-  "main": "main/electron-src/index.js",
+  "version": "0.2.0",
+  "description": "A tiny always-on desktop lyric sheet for your current Last.fm track.",
+  "main": ".vite/build/main.js",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
   "license": "MIT",
   "scripts": {
-    "start": "electron .",
-    "build-renderer": "next build renderer && next export renderer",
-    "build-electron": "tsc -p electron-src",
-    "build": "npm run clean && npm run build-renderer && npm run build-electron",
-    "dist": "npm run build && electron-builder --dir",
-    "clean": "rm -rf ./main && rm -rf ./renderer/out",
-    "publish": "electron-builder --publish always --mac --linux",
-    "release": "npm run dist && npm run publish ",
-    "type-check": "tsc"
-  },
-  "build": {
-    "extraResources": [
-      {
-        "from": "renderer/out",
-        "to": "app/renderer"
-      }
-    ],
-    "appId": "com.lyricsheet",
-    "mac": {
-      "icon": "icons/mac/icon.icns",
-      "darkModeSupport": true
-    },
-    "win": {
-      "icon": "icons/windows/icon.png"
-    },
-    "linux": {}
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-optional-chaining": "^7.6.0",
-    "@types/next": "9.0.0",
-    "@types/node": "^12.12.7",
-    "@types/react": "^16.9.11",
-    "@types/react-dom": "^16.9.4",
-    "@types/styled-components": "^4.4.0",
-    "electron": "^7.1.1",
-    "electron-builder": "^22.1.0",
-    "next": "latest",
-    "typescript": "^3.7.2"
+    "dev": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge start",
+    "start": "pnpm dev",
+    "build": "pnpm package",
+    "package": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge package",
+    "make": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-zip",
+    "make:dmg": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-dmg",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "electron-is-dev": "^1.1.0",
-    "electron-next": "^3.1.5",
-    "electron-store": "^5.1.0",
-    "genius-api": "^0.4.1",
-    "lastfm": "^0.9.3",
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0",
-    "react-icons": "^3.8.0",
-    "sanitize-html": "^1.20.1",
-    "styled-components": "^4.4.1",
-    "x-ray": "^2.3.4"
+    "cheerio": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^11.0.2",
+    "lucide-react": "^1.17.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sanitize-html": "^2.17.4",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-dmg": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/plugin-vite": "^7.11.2",
+    "@electron-forge/shared-types": "^7.11.2",
+    "@electron/fuses": "^1.8.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "@types/sanitize-html": "^2.16.1",
+    "@vitejs/plugin-react": "^6.0.2",
+    "cross-env": "^10.1.0",
+    "electron": "42.3.1",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
   }
 }

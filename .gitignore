@@ -1,6 +1,6 @@
 node_modules
-main
-renderer/.next
-renderer/out
+.vite
+.cache
+out
 dist
 .DS_Store
