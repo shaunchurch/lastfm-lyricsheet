@@ -4,20 +4,32 @@ import type { Settings } from "@/shared/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
+type SettingsForm = Pick<
+  Settings,
+  "lastfmApiKey" | "lastfmUsername" | "geniusAccessToken" | "pollIntervalSeconds"
+>;
+
 interface SettingsViewProps {
+  canGoBack: boolean;
   settings: Settings;
   onSave(settings: Partial<Settings>): Promise<void>;
   onBack(): void;
 }
 
-export function SettingsView({ settings, onSave, onBack }: SettingsViewProps) {
-  const [form, setForm] = useState(settings);
+export function SettingsView({
+  canGoBack,
+  settings,
+  onSave,
+  onBack,
+}: SettingsViewProps) {
+  const [form, setForm] = useState<SettingsForm>(() => toForm(settings));
   const [error, setError] = useState("");
   const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!isDirty) {
-      setForm(settings);
+      setForm(toForm(settings));
     }
   }, [isDirty, settings]);
 
@@ -35,17 +47,20 @@ export function SettingsView({ settings, onSave, onBack }: SettingsViewProps) {
 
     try {
       setError("");
+      setIsSaving(true);
       await onSave(form);
       setIsDirty(false);
       onBack();
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unable to save settings.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
-  function updateForm<Field extends keyof Settings>(
+  function updateForm<Field extends keyof SettingsForm>(
     field: Field,
-    value: Settings[Field],
+    value: SettingsForm[Field],
   ) {
     setIsDirty(true);
     setForm((current) => ({
@@ -57,15 +72,19 @@ export function SettingsView({ settings, onSave, onBack }: SettingsViewProps) {
   return (
     <main className="app-drag lyric-panel relative flex h-screen flex-col overflow-hidden text-white">
       <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          title="Back"
-          onClick={onBack}
-        >
-          <ArrowLeft size={17} />
-        </Button>
+        {canGoBack ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            title="Back to player"
+            onClick={onBack}
+          >
+            <ArrowLeft size={17} />
+          </Button>
+        ) : (
+          <div className="h-8 w-8" />
+        )}
         <h1 className="text-sm font-semibold text-white/78">Settings</h1>
         <div className="h-8 w-8" />
       </div>
@@ -116,13 +135,22 @@ export function SettingsView({ settings, onSave, onBack }: SettingsViewProps) {
           />
         </Field>
         {error && <p className="text-sm text-rose-300">{error}</p>}
-        <Button type="submit" className="mt-auto">
+        <Button type="submit" className="mt-auto" disabled={isSaving}>
           <Save size={16} />
-          Save
+          {isSaving ? "Saving" : "Save"}
         </Button>
       </form>
     </main>
   );
+}
+
+function toForm(settings: Settings): SettingsForm {
+  return {
+    lastfmApiKey: settings.lastfmApiKey,
+    lastfmUsername: settings.lastfmUsername,
+    geniusAccessToken: settings.geniusAccessToken,
+    pollIntervalSeconds: settings.pollIntervalSeconds,
+  };
 }
 
 function Field({

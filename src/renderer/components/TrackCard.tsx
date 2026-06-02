@@ -5,10 +5,11 @@ import { Artwork } from "./Artwork";
 interface TrackCardProps {
   track?: Track;
   mode: WindowMode;
+  subtitle: string;
   onExpand(): void;
 }
 
-export function TrackCard({ track, mode, onExpand }: TrackCardProps) {
+export function TrackCard({ track, mode, subtitle, onExpand }: TrackCardProps) {
   const compact = mode === "compact";
   const content = (
     <>
@@ -22,9 +23,7 @@ export function TrackCard({ track, mode, onExpand }: TrackCardProps) {
           {track?.name || "Waiting for Last.fm"}
         </h1>
         <p className="truncate text-[12.5px] leading-[18.75px] text-white/62">
-          <span>{track?.artist || "LyricSheet"}</span>
-          {track?.album && <span className="px-1 text-white/42">·</span>}
-          {track?.album && <span>{track.album}</span>}
+          {subtitle}
         </p>
       </div>
     </>
@@ -39,7 +38,12 @@ export function TrackCard({ track, mode, onExpand }: TrackCardProps) {
 
   if (compact) {
     return (
-      <button type="button" className={className} onClick={onExpand}>
+      <button
+        type="button"
+        className={className}
+        title="Expand lyric sheet"
+        onClick={onExpand}
+      >
         {content}
       </button>
     );

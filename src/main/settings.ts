@@ -2,12 +2,12 @@ import type { LegacySettings, Settings } from "@/shared/types";
 
 export const compactWindowSize = {
   width: 344,
-  height: 70,
+  height: 72,
 };
 
 export const expandedWindowSize = {
-  width: 344,
-  height: 540,
+  width: 560,
+  height: 760,
 };
 
 export const defaultSettings: Settings = {

@@ -12,7 +12,7 @@ export function createMainWindow(settings: Settings): BrowserWindow {
     height: size.height,
     x: bounds?.x,
     y: bounds?.y,
-    minWidth: 280,
+    minWidth: 320,
     minHeight: 70,
     show: false,
     frame: false,
