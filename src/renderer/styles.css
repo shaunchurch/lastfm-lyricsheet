@@ -63,6 +63,12 @@ body {
   transition: opacity 150ms ease;
 }
 
+.window-controls,
+.window-controls * {
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+
 .lyric-panel:hover .window-controls {
   opacity: 1;
 }
@@ -142,6 +148,10 @@ input {
 }
 
 .app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.app-no-drag * {
   -webkit-app-region: no-drag;
 }
 

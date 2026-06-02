@@ -75,7 +75,7 @@ export function LyricsView({
   return (
     <section className="app-no-drag flex min-h-0 flex-1 flex-col overflow-hidden">
       <div
-        className="lyrics-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pb-0 pt-[18px] text-left text-[14px] font-normal leading-[21px] text-white/72"
+        className="lyrics-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pb-0 pt-[18px] text-left text-[14px] font-medium leading-[21px] text-white/72"
         dangerouslySetInnerHTML={{ __html: lyrics.html }}
       />
       {lyrics.sourceUrl && (
