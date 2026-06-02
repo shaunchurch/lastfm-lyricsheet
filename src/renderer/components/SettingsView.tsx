@@ -70,8 +70,8 @@ export function SettingsView({
   }
 
   return (
-    <main className="app-drag lyric-panel relative flex h-screen flex-col overflow-hidden text-white">
-      <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3">
+    <main className="lyric-panel relative flex h-screen flex-col overflow-hidden text-white">
+      <div className="app-drag relative z-10 flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3">
         {canGoBack ? (
           <Button
             type="button"

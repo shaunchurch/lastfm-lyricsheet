@@ -70,7 +70,7 @@ export function App() {
 
   if (!state) {
     return (
-      <main className="app-drag lyric-panel relative flex h-screen overflow-hidden text-white">
+      <main className="lyric-panel relative flex h-screen overflow-hidden text-white">
         <LoadingShell />
       </main>
     );
@@ -88,7 +88,7 @@ export function App() {
   }
 
   return (
-    <main className="app-drag lyric-panel relative flex h-screen overflow-hidden text-white">
+    <main className="lyric-panel relative flex h-screen overflow-hidden text-white">
       <ArtworkBackdrop artworkUrl={state.track?.artworkUrl} />
       <WindowControls
         mode={state.windowMode}
@@ -169,7 +169,7 @@ function ArtworkBackdrop({ artworkUrl }: { artworkUrl?: string }) {
 
 function LoadingShell() {
   return (
-    <div className="relative z-10 flex h-full w-full flex-col overflow-hidden">
+    <div className="app-drag relative z-10 flex h-full w-full flex-col overflow-hidden">
       <div className="flex items-center gap-[11px] px-[14px] py-3">
         <div className="skeleton-block h-11 w-11 rounded-[6px]" />
         <div className="grid flex-1 gap-2 pr-20">
