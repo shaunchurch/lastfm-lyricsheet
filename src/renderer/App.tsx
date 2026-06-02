@@ -96,6 +96,12 @@ export function App() {
           aria-hidden="true"
         />
       )}
+      {state.windowMode === "compact" && (
+        <div
+          className="app-drag absolute bottom-0 left-0 z-20 h-4 w-[calc(100%-152px)]"
+          aria-hidden="true"
+        />
+      )}
       <WindowControls
         mode={state.windowMode}
         pinned={state.alwaysOnTop}
