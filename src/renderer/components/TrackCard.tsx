@@ -33,7 +33,7 @@ export function TrackCard({ track, mode, subtitle, onExpand }: TrackCardProps) {
     "grid w-full grid-cols-[44px_minmax(0,1fr)] items-center gap-[11px] text-left",
     compact
       ? "app-no-drag px-[14px] py-3 transition hover:bg-white/[0.04]"
-      : "app-drag px-[14px] py-3",
+      : "px-[14px] py-3",
   );
 
   if (compact) {

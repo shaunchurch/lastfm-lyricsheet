@@ -90,6 +90,12 @@ export function App() {
   return (
     <main className="lyric-panel relative flex h-screen overflow-hidden text-white">
       <ArtworkBackdrop artworkUrl={state.track?.artworkUrl} />
+      {state.windowMode === "expanded" && (
+        <div
+          className="app-drag absolute left-0 top-0 z-20 h-[72px] w-[calc(100%-152px)]"
+          aria-hidden="true"
+        />
+      )}
       <WindowControls
         mode={state.windowMode}
         pinned={state.alwaysOnTop}
