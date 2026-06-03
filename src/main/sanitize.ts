@@ -30,7 +30,8 @@ export function sanitizeLyricsHtml(html: string): string {
     allowedAttributes: {},
     disallowedTagsMode: "discard",
   })
-    .replace(/(<br\s*\/?>\s*){3,}/gi, "<br><br>")
+    .replace(/\s*<br\s*\/?>\s*/gi, "<br>")
+    .replace(/(<br>){3,}/gi, "<br><br>")
     .trim();
 }
 

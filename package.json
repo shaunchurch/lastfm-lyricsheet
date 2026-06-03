@@ -14,12 +14,15 @@
     "package": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge package",
     "make": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-zip",
     "make:dmg": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-dmg",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run test:genius",
+    "test:genius": "node -e \"require('node:fs').rmSync('.cache/test-build',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node --test tests/*.test.cjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "compromise": "^14.15.1",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^11.0.2",
     "lucide-react": "^1.17.0",

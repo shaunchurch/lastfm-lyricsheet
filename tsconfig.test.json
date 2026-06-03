@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "isolatedModules": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node10",
+    "noEmit": false,
+    "outDir": ".cache/test-build",
+    "rootDir": ".",
+    "sourceMap": false
+  },
+  "include": [
+    "src/main/providers/lyrics/genius.ts",
+    "src/main/sanitize.ts",
+    "src/shared/types.ts"
+  ]
+}
