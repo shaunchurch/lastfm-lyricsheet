@@ -1,7 +1,8 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 import { join } from "node:path";
 import type { Settings, WindowMode } from "@/shared/types";
 import { compactWindowSize, expandedWindowSize } from "./settings";
+import { getAnchoredWindowBounds } from "./window-bounds";
 
 export function createMainWindow(settings: Settings): BrowserWindow {
   const size = getWindowSize(settings.windowMode);
@@ -56,10 +57,9 @@ export function getWindowSize(mode: WindowMode): { width: number; height: number
 export function applyWindowMode(window: BrowserWindow, mode: WindowMode): void {
   const bounds = window.getBounds();
   const size = getWindowSize(mode);
-  window.setBounds({
-    x: bounds.x,
-    y: bounds.y,
-    width: size.width,
-    height: size.height,
-  });
+  const display = screen.getDisplayMatching(bounds);
+  window.setBounds(
+    getAnchoredWindowBounds(bounds, size, display.workArea),
+    process.platform === "darwin",
+  );
 }

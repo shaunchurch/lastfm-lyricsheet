@@ -13,6 +13,7 @@
   "include": [
     "src/main/providers/lyrics/genius.ts",
     "src/main/sanitize.ts",
+    "src/main/window-bounds.ts",
     "src/shared/types.ts"
   ]
 }
