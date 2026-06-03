@@ -6,23 +6,22 @@ interface TrackCardProps {
   track?: Track;
   mode: WindowMode;
   subtitle: string;
-  onExpand(): void;
 }
 
-export function TrackCard({ track, mode, subtitle, onExpand }: TrackCardProps) {
+export function TrackCard({ track, mode, subtitle }: TrackCardProps) {
   const compact = mode === "compact";
   const content = (
     <>
       <Artwork
         src={track?.artworkUrl}
         alt={track ? `${track.name} artwork` : "Album artwork"}
-        className="h-11 w-11"
+        className="h-12 w-12"
       />
-      <div className="min-w-0 pr-20">
-        <h1 className="truncate text-[16px] font-semibold leading-6 text-white">
+      <div className={cn("min-w-0", compact ? "pr-24" : "pr-[148px]")}>
+        <h1 className="truncate text-[15.5px] font-semibold leading-[22px] text-white/96">
           {track?.name || "Waiting for Last.fm"}
         </h1>
-        <p className="truncate text-[12.5px] leading-[18.75px] text-white/62">
+        <p className="truncate text-[12.5px] leading-[18px] text-white/56">
           {subtitle}
         </p>
       </div>
@@ -30,24 +29,9 @@ export function TrackCard({ track, mode, subtitle, onExpand }: TrackCardProps) {
   );
 
   const className = cn(
-    "grid w-full grid-cols-[44px_minmax(0,1fr)] items-center gap-[11px] text-left",
-    compact
-      ? "app-no-drag px-[14px] py-3 transition hover:bg-white/[0.04]"
-      : "px-[14px] py-3",
+    "grid w-full grid-cols-[48px_minmax(0,1fr)] items-center gap-3 text-left",
+    compact ? "app-drag px-4 py-3" : "px-4 pb-3 pt-[13px]",
   );
-
-  if (compact) {
-    return (
-      <button
-        type="button"
-        className={className}
-        title="Expand lyric sheet"
-        onClick={onExpand}
-      >
-        {content}
-      </button>
-    );
-  }
 
   return (
     <header className={className}>

@@ -1,6 +1,40 @@
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { ExternalLink, Highlighter, RefreshCw, Repeat2 } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { LyricsState, ProviderStatus, Track } from "@/shared/types";
+import {
+  annotateLyricRepetition,
+  REPETITION_CATEGORIES,
+  type RepetitionCategory,
+  type RepetitionPart,
+} from "../lib/lyricRepetition";
+import {
+  annotateLyricSyntax,
+  SYNTAX_CATEGORIES,
+  type SyntaxCategory,
+  type SyntaxPart,
+} from "../lib/lyricSyntax";
+import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+
+type LyricsDisplayMode = "plain" | "syntax" | "repetition";
+
+type LyricsNode =
+  | {
+      type: "text";
+      text: string;
+      section?: boolean;
+    }
+  | {
+      type: "break";
+    };
+
+type SyntaxPartsByNode = Record<number, SyntaxPart[]>;
+type RepetitionPartsByNode = Record<number, RepetitionPart[]>;
+
+const ALL_SYNTAX_CATEGORY_IDS = SYNTAX_CATEGORIES.map((category) => category.id);
+const ALL_REPETITION_CATEGORY_IDS = REPETITION_CATEGORIES.map(
+  (category) => category.id,
+);
 
 interface LyricsViewProps {
   track?: Track;
@@ -17,6 +51,34 @@ export function LyricsView({
   onOpenSource,
   onRetry,
 }: LyricsViewProps) {
+  const [displayMode, setDisplayMode] = useState<LyricsDisplayMode>("plain");
+  const [visibleSyntaxCategories, setVisibleSyntaxCategories] = useState(
+    () => new Set(ALL_SYNTAX_CATEGORY_IDS),
+  );
+  const [visibleRepetitionCategories, setVisibleRepetitionCategories] = useState(
+    () => new Set(ALL_REPETITION_CATEGORY_IDS),
+  );
+
+  function toggleSyntaxCategory(category: SyntaxCategory) {
+    setVisibleSyntaxCategories((currentCategories) =>
+      getNextFocusedCategorySet(
+        currentCategories,
+        category,
+        ALL_SYNTAX_CATEGORY_IDS,
+      ),
+    );
+  }
+
+  function toggleRepetitionCategory(category: RepetitionCategory) {
+    setVisibleRepetitionCategories((currentCategories) =>
+      getNextFocusedCategorySet(
+        currentCategories,
+        category,
+        ALL_REPETITION_CATEGORY_IDS,
+      ),
+    );
+  }
+
   if (!track) {
     if (providerStatus.nowPlaying === "error") {
       return (
@@ -72,28 +134,410 @@ export function LyricsView({
     );
   }
 
+  const syntaxActive = displayMode === "syntax";
+  const repetitionActive = displayMode === "repetition";
+
   return (
     <section className="app-no-drag flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div
-        className="lyrics-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pb-0 pt-[18px] text-left text-[14px] font-medium leading-[21px] text-white/72"
-        dangerouslySetInnerHTML={{ __html: lyrics.html }}
+      <LyricsBody
+        html={lyrics.html}
+        displayMode={displayMode}
+        visibleSyntaxCategories={visibleSyntaxCategories}
+        visibleRepetitionCategories={visibleRepetitionCategories}
       />
-      {lyrics.sourceUrl && (
-        <div className="flex shrink-0 items-center justify-start px-[18px] pb-3 pt-2">
+      <div className="source-footer">
+        {lyrics.sourceUrl ? (
           <Button
             type="button"
             variant="ghost"
             size="default"
-            className="h-auto min-w-0 justify-start px-0 text-left text-[12px] font-normal leading-[16.5px] text-white/40 hover:bg-transparent hover:text-white/62"
+            className="source-link h-auto min-w-0 justify-start px-0 text-left text-[12px] font-normal leading-[16.5px]"
             onClick={() => lyrics.sourceUrl && onOpenSource(lyrics.sourceUrl)}
           >
             <ExternalLink size={12} className="shrink-0" />
             <span className="truncate">{formatSourceLabel(lyrics.sourceUrl)}</span>
           </Button>
+        ) : (
+          <span className="source-spacer" aria-hidden="true" />
+        )}
+        <div className="display-controls">
+          <div className="syntax-mode-switch" aria-label="Lyric display mode">
+            <button
+              type="button"
+              className={cn(
+                "syntax-mode-button",
+                displayMode === "plain" && "syntax-mode-button-active",
+              )}
+              aria-pressed={displayMode === "plain"}
+              onClick={() => setDisplayMode("plain")}
+            >
+              Plain
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "syntax-mode-button",
+                syntaxActive && "syntax-mode-button-active",
+              )}
+              aria-pressed={syntaxActive}
+              title="Syntax colors"
+              onClick={() => setDisplayMode("syntax")}
+            >
+              <Highlighter size={12} />
+              Syntax
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "syntax-mode-button",
+                repetitionActive && "syntax-mode-button-active",
+              )}
+              aria-pressed={repetitionActive}
+              title="Repetition lens"
+              onClick={() => setDisplayMode("repetition")}
+            >
+              <Repeat2 size={12} />
+              Repeat
+            </button>
+          </div>
+          {syntaxActive && (
+            <div className="syntax-legend" aria-label="Syntax legend">
+              {SYNTAX_CATEGORIES.map((category) => {
+                const visible = visibleSyntaxCategories.has(category.id);
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={cn(
+                      "syntax-legend-item",
+                      getSyntaxClass(category.id),
+                      !visible && "syntax-legend-item-hidden",
+                    )}
+                    aria-pressed={visible}
+                    title={getFilterTitle(
+                      category,
+                      visibleSyntaxCategories,
+                      ALL_SYNTAX_CATEGORY_IDS,
+                    )}
+                    onClick={() => toggleSyntaxCategory(category.id)}
+                  >
+                    <span className="syntax-legend-dot" />
+                    {category.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {repetitionActive && (
+            <div className="syntax-legend" aria-label="Repetition legend">
+              {REPETITION_CATEGORIES.map((category) => {
+                const visible = visibleRepetitionCategories.has(category.id);
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={cn(
+                      "syntax-legend-item",
+                      getRepetitionClass(category.id),
+                      !visible && "syntax-legend-item-hidden",
+                    )}
+                    aria-pressed={visible}
+                    title={getFilterTitle(
+                      category,
+                      visibleRepetitionCategories,
+                      ALL_REPETITION_CATEGORY_IDS,
+                    )}
+                    onClick={() => toggleRepetitionCategory(category.id)}
+                  >
+                    <span className="syntax-legend-dot" />
+                    {category.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
+}
+
+function getNextFocusedCategorySet<T extends string>(
+  currentCategories: ReadonlySet<T>,
+  category: T,
+  allCategories: T[],
+): Set<T> {
+  if (areAllCategoriesVisible(currentCategories, allCategories)) {
+    return new Set([category]);
+  }
+
+  if (currentCategories.has(category) && currentCategories.size === 1) {
+    return new Set(allCategories);
+  }
+
+  const nextCategories = new Set(currentCategories);
+  if (nextCategories.has(category)) {
+    nextCategories.delete(category);
+  } else {
+    nextCategories.add(category);
+  }
+  return nextCategories;
+}
+
+function areAllCategoriesVisible<T extends string>(
+  categories: ReadonlySet<T>,
+  allCategories: T[],
+): boolean {
+  return (
+    categories.size === allCategories.length &&
+    allCategories.every((category) => categories.has(category))
+  );
+}
+
+function getFilterTitle<T extends string>(
+  category: { id: T; label: string },
+  visibleCategories: ReadonlySet<T>,
+  allCategories: T[],
+): string {
+  const label = category.label.toLowerCase();
+
+  if (areAllCategoriesVisible(visibleCategories, allCategories)) {
+    return `Show only ${label}`;
+  }
+
+  if (!visibleCategories.has(category.id)) {
+    return `Add ${label}`;
+  }
+
+  if (visibleCategories.size === 1) {
+    return "Show all categories";
+  }
+
+  return `Hide ${label}`;
+}
+
+function LyricsBody({
+  html,
+  displayMode,
+  visibleSyntaxCategories,
+  visibleRepetitionCategories,
+}: {
+  html: string;
+  displayMode: LyricsDisplayMode;
+  visibleSyntaxCategories: ReadonlySet<SyntaxCategory>;
+  visibleRepetitionCategories: ReadonlySet<RepetitionCategory>;
+}) {
+  const nodes = useMemo(() => parseLyricsHtml(html), [html]);
+  const syntaxActive = displayMode === "syntax";
+  const repetitionActive = displayMode === "repetition";
+  const [syntaxPartsByNode, setSyntaxPartsByNode] = useState<SyntaxPartsByNode>(
+    {},
+  );
+  const repetitionPartsByNode = useMemo<RepetitionPartsByNode>(
+    () => (repetitionActive ? annotateLyricRepetition(nodes) : {}),
+    [nodes, repetitionActive],
+  );
+
+  useEffect(() => {
+    if (!syntaxActive) return;
+
+    let cancelled = false;
+    setSyntaxPartsByNode({});
+    const textNodes = nodes
+      .map((node, index) => ({ node, index }))
+      .filter(
+        (entry): entry is { node: Extract<LyricsNode, { type: "text" }>; index: number } =>
+          entry.node.type === "text",
+      );
+
+    void Promise.all(
+      textNodes.map(async ({ node, index }) => [
+        index,
+        await annotateLyricSyntax(node.text),
+      ] as const),
+    ).then((entries) => {
+      if (cancelled) return;
+      setSyntaxPartsByNode(Object.fromEntries(entries));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [nodes, syntaxActive]);
+
+  return (
+    <div
+      className={cn(
+        "lyrics-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pb-0 pt-1 text-left text-[14.5px] font-[450] leading-[22px] text-white/76",
+        syntaxActive && "lyrics-scroll-syntax",
+        repetitionActive && "lyrics-scroll-repetition",
+      )}
+    >
+      {nodes.map((node, index) => {
+        if (node.type === "break") {
+          return <br key={`break-${index}`} />;
+        }
+
+        if (node.section) {
+          return (
+            <span key={`section-${index}`} className="lyrics-section-label">
+              {formatSectionLabel(node.text)}
+            </span>
+          );
+        }
+
+        if (displayMode === "plain") {
+          return <Fragment key={`text-${index}`}>{node.text}</Fragment>;
+        }
+
+        if (repetitionActive) {
+          return (
+            <Fragment key={`repetition-${index}`}>
+              {renderRepetitionParts(
+                repetitionPartsByNode[index] ?? [{ text: node.text }],
+                `repetition-${index}`,
+                visibleRepetitionCategories,
+              )}
+            </Fragment>
+          );
+        }
+
+        return (
+          <Fragment key={`syntax-${index}`}>
+            {renderSyntaxParts(
+              syntaxPartsByNode[index] ?? [{ text: node.text }],
+              `syntax-${index}`,
+              visibleSyntaxCategories,
+            )}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function renderRepetitionParts(
+  parts: RepetitionPart[],
+  keyPrefix: string,
+  visibleRepetitionCategories: ReadonlySet<RepetitionCategory>,
+): ReactNode {
+  return parts.map((part, index) => {
+    if (!part.category || !visibleRepetitionCategories.has(part.category)) {
+      return <Fragment key={`${keyPrefix}-plain-${index}`}>{part.text}</Fragment>;
+    }
+
+    return (
+      <span
+        key={`${keyPrefix}-${part.category}-${index}`}
+        className={cn(
+          "syntax-token",
+          "repetition-token",
+          getRepetitionClass(part.category),
+        )}
+      >
+        {part.text}
+      </span>
+    );
+  });
+}
+
+function renderSyntaxParts(
+  parts: SyntaxPart[],
+  keyPrefix: string,
+  visibleSyntaxCategories: ReadonlySet<SyntaxCategory>,
+): ReactNode {
+  return parts.map((part, index) => {
+    if (!part.category || !visibleSyntaxCategories.has(part.category)) {
+      return <Fragment key={`${keyPrefix}-plain-${index}`}>{part.text}</Fragment>;
+    }
+
+    return (
+      <span
+        key={`${keyPrefix}-${part.category}-${index}`}
+        className={cn("syntax-token", getSyntaxClass(part.category))}
+      >
+        {part.text}
+      </span>
+    );
+  });
+}
+
+function parseLyricsHtml(html: string): LyricsNode[] {
+  const document = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const root = document.body.firstElementChild;
+  const nodes: LyricsNode[] = [];
+
+  if (!root) return nodes;
+
+  root.childNodes.forEach((node) => visitLyricsNode(node, nodes));
+  return normalizeLyricsNodes(nodes);
+}
+
+function visitLyricsNode(node: ChildNode, nodes: LyricsNode[]): void {
+  if (node.nodeType === Node.TEXT_NODE) {
+    if (node.textContent) {
+      nodes.push({
+        type: "text",
+        text: node.textContent,
+        section: isSectionLabel(node.textContent),
+      });
+    }
+    return;
+  }
+
+  if (node.nodeName.toLowerCase() === "br") {
+    nodes.push({ type: "break" });
+    return;
+  }
+
+  node.childNodes.forEach((child) => visitLyricsNode(child, nodes));
+}
+
+function normalizeLyricsNodes(nodes: LyricsNode[]): LyricsNode[] {
+  const normalized: LyricsNode[] = [];
+
+  for (const node of nodes) {
+    if (node.type === "break") {
+      const previous = normalized.at(-1);
+      const beforePrevious = normalized.at(-2);
+      if (previous?.type === "break" && beforePrevious?.type === "break") {
+        continue;
+      }
+      normalized.push(node);
+      continue;
+    }
+
+    if (node.section) {
+      while (
+        normalized.at(-1)?.type === "break" &&
+        normalized.at(-2)?.type === "break"
+      ) {
+        normalized.pop();
+      }
+    }
+
+    normalized.push(node);
+  }
+
+  return normalized;
+}
+
+function getSyntaxClass(category: SyntaxCategory): string {
+  return `syntax-${category}`;
+}
+
+function getRepetitionClass(category: RepetitionCategory): string {
+  return `repetition-${category}`;
+}
+
+function isSectionLabel(text: string): boolean {
+  return /^\[[^\]]+\]$/.test(text.trim());
+}
+
+function formatSectionLabel(text: string): string {
+  return text.trim().replace(/^\[([^\]]+)\]$/, "$1");
 }
 
 function formatSourceLabel(url: string): string {

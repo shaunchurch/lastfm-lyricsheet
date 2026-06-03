@@ -3,8 +3,8 @@
 :root {
   color-scheme: dark;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter,
+    ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   background: transparent;
 }
 
@@ -24,16 +24,25 @@ body,
 
 body {
   color: white;
+  -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
 }
 
 .lyric-panel {
-  border-radius: 0;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(15, 19, 21, 0.92), rgba(8, 11, 12, 0.94)),
-    rgba(12, 12, 14, 0.82);
-  box-shadow: 0 28px 70px -16px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(24px) saturate(1.3);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), transparent 28%),
+    linear-gradient(180deg, rgba(21, 24, 27, 0.84), rgba(7, 9, 12, 0.9)),
+    rgba(12, 12, 14, 0.74);
+  box-shadow:
+    0 30px 72px -18px rgba(0, 0, 0, 0.72),
+    0 9px 26px -18px rgba(0, 0, 0, 0.86),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(28px) saturate(1.34);
+  -webkit-backdrop-filter: blur(28px) saturate(1.34);
 }
 
 .artwork-backdrop {
@@ -44,9 +53,9 @@ body {
   z-index: 0;
   background-position: center;
   background-size: cover;
-  filter: blur(20px) saturate(1.22);
-  opacity: 0.42;
-  transform: scale(1.04);
+  filter: blur(24px) saturate(1.26);
+  opacity: 0.5;
+  transform: scale(1.05);
 }
 
 .panel-readable-overlay {
@@ -56,18 +65,32 @@ body {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.07), transparent 28%),
+    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.1), transparent 27%),
+    radial-gradient(circle at 72% 18%, rgba(108, 149, 180, 0.16), transparent 32%),
     linear-gradient(
       0deg,
-      rgba(0, 0, 15, 0.64),
-      rgba(0, 0, 15, 0.32) 42%,
-      rgba(0, 0, 15, 0.62)
+      rgba(0, 3, 12, 0.68),
+      rgba(2, 7, 14, 0.38) 42%,
+      rgba(0, 2, 10, 0.66)
     );
 }
 
 .window-controls {
-  opacity: 0.55;
-  transition: opacity 150ms ease;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 10px;
+  background: rgba(3, 5, 8, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  opacity: 0.68;
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
 }
 
 .window-controls,
@@ -77,46 +100,9 @@ body {
 }
 
 .lyric-panel:hover .window-controls {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(3, 5, 8, 0.3);
   opacity: 1;
-}
-
-.mode-pill {
-  display: inline-flex;
-  align-items: center;
-  height: 26px;
-  padding: 2px;
-  border: 1px solid rgba(250, 250, 250, 0.08);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.22);
-  box-shadow: inset 0 1px 0 rgba(250, 250, 250, 0.06);
-}
-
-.mode-pill-button {
-  -webkit-app-region: no-drag;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 20px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(250, 250, 250, 0.42);
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    color 150ms ease;
-}
-
-.mode-pill-button:hover,
-.mode-pill-button:focus-visible {
-  color: rgba(250, 250, 250, 0.86);
-  outline: none;
-}
-
-.mode-pill-button-active {
-  background: rgba(250, 250, 250, 0.13);
-  color: rgba(250, 250, 250, 0.92);
 }
 
 .skeleton-block {
@@ -162,6 +148,131 @@ input {
   -webkit-app-region: no-drag;
 }
 
+.syntax-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 26px;
+  padding: 2px;
+  border: 1px solid rgba(250, 250, 250, 0.075);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.055),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.syntax-mode-button {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(250, 250, 250, 0.48);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.syntax-mode-button:hover,
+.syntax-mode-button:focus-visible {
+  color: rgba(250, 250, 250, 0.88);
+  outline: none;
+}
+
+.syntax-mode-button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28);
+}
+
+.syntax-mode-button-active {
+  background: rgba(250, 250, 250, 0.145);
+  color: rgba(250, 250, 250, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.16);
+}
+
+.syntax-legend {
+  display: flex;
+  min-width: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.syntax-legend::-webkit-scrollbar {
+  display: none;
+}
+
+.syntax-legend-item {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid rgba(var(--syntax-rgb), 0.36);
+  border-radius: 7px;
+  background: rgba(var(--syntax-rgb), 0.12);
+  color: rgba(var(--syntax-text-rgb), 0.86);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.syntax-legend-item:hover,
+.syntax-legend-item:focus-visible {
+  border-color: rgba(var(--syntax-rgb), 0.68);
+  background: rgba(var(--syntax-rgb), 0.23);
+  outline: none;
+}
+
+.syntax-legend-item:focus-visible {
+  box-shadow: 0 0 0 2px rgba(var(--syntax-rgb), 0.24);
+}
+
+.syntax-legend-item-hidden {
+  border-color: rgba(250, 250, 250, 0.12);
+  background: rgba(250, 250, 250, 0.04);
+  color: rgba(250, 250, 250, 0.34);
+  opacity: 0.72;
+}
+
+.syntax-legend-item-hidden:hover,
+.syntax-legend-item-hidden:focus-visible {
+  border-color: rgba(var(--syntax-rgb), 0.4);
+  background: rgba(var(--syntax-rgb), 0.1);
+  color: rgba(var(--syntax-text-rgb), 0.72);
+}
+
+.syntax-legend-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgb(var(--syntax-rgb));
+  box-shadow: 0 0 10px rgba(var(--syntax-rgb), 0.48);
+}
+
 .lyrics-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(250, 250, 250, 0.22) transparent;
@@ -181,5 +292,168 @@ input {
 }
 
 .lyrics-scroll br {
-  line-height: 1.5;
+  line-height: 1.28;
+}
+
+.lyrics-section-label {
+  display: inline-block;
+  margin: 9px 0 2px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.lyrics-scroll br + .lyrics-section-label {
+  margin-top: 5px;
+}
+
+.lyrics-scroll > .lyrics-section-label:first-child {
+  margin-top: 0;
+}
+
+.source-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  margin: 0 18px;
+  padding: 7px 0 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.source-link {
+  flex: 1 1 auto;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.source-link:hover,
+.source-link:focus-visible {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.source-spacer {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.display-controls {
+  display: flex;
+  min-width: 0;
+  max-width: 72%;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.display-controls .syntax-legend {
+  max-width: min(42vw, 224px);
+}
+
+.lyrics-scroll-syntax {
+  color: rgba(250, 250, 250, 0.72);
+}
+
+.lyrics-scroll-repetition {
+  color: rgba(250, 250, 250, 0.72);
+}
+
+.syntax-token {
+  display: inline;
+  margin: 0 -1px;
+  padding: 0 2px;
+  border-radius: 4px;
+  background: rgba(var(--syntax-rgb), 0.28);
+  box-shadow: 0 0 0 1px rgba(var(--syntax-rgb), 0.28);
+  color: rgb(var(--syntax-text-rgb));
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.repetition-token {
+  border-radius: 5px;
+}
+
+.syntax-noun {
+  --syntax-rgb: 255, 128, 150;
+  --syntax-text-rgb: 255, 225, 230;
+}
+
+.syntax-verb {
+  --syntax-rgb: 82, 196, 255;
+  --syntax-text-rgb: 216, 244, 255;
+}
+
+.syntax-adjective {
+  --syntax-rgb: 255, 205, 92;
+  --syntax-text-rgb: 255, 239, 196;
+}
+
+.syntax-adverb {
+  --syntax-rgb: 185, 154, 255;
+  --syntax-text-rgb: 235, 227, 255;
+}
+
+.syntax-pronoun {
+  --syntax-rgb: 255, 160, 92;
+  --syntax-text-rgb: 255, 232, 211;
+}
+
+.syntax-determiner {
+  --syntax-rgb: 177, 229, 95;
+  --syntax-text-rgb: 238, 255, 212;
+}
+
+.syntax-preposition {
+  --syntax-rgb: 99, 229, 229;
+  --syntax-text-rgb: 218, 255, 255;
+}
+
+.syntax-conjunction {
+  --syntax-rgb: 90, 226, 174;
+  --syntax-text-rgb: 211, 255, 237;
+}
+
+.syntax-question {
+  --syntax-rgb: 120, 164, 255;
+  --syntax-text-rgb: 220, 232, 255;
+}
+
+.syntax-expression {
+  --syntax-rgb: 255, 117, 211;
+  --syntax-text-rgb: 255, 224, 245;
+}
+
+.syntax-number {
+  --syntax-rgb: 212, 226, 97;
+  --syntax-text-rgb: 251, 255, 205;
+}
+
+.syntax-section {
+  --syntax-rgb: 250, 250, 250;
+  --syntax-text-rgb: 250, 250, 250;
+}
+
+.syntax-other {
+  --syntax-rgb: 180, 190, 202;
+  --syntax-text-rgb: 232, 237, 243;
+}
+
+.repetition-word {
+  --syntax-rgb: 255, 156, 99;
+  --syntax-text-rgb: 255, 234, 218;
+}
+
+.repetition-phrase {
+  --syntax-rgb: 112, 211, 255;
+  --syntax-text-rgb: 222, 247, 255;
+}
+
+.repetition-line {
+  --syntax-rgb: 198, 169, 255;
+  --syntax-text-rgb: 239, 231, 255;
 }

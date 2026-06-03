@@ -6,7 +6,6 @@ import {
   RefreshCw,
   Settings,
 } from "lucide-react";
-import type { ReactNode } from "react";
 import type { WindowMode } from "@/shared/types";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
@@ -31,7 +30,7 @@ export function WindowControls({
   showRetry,
 }: WindowControlsProps) {
   return (
-    <div className="window-controls app-no-drag absolute right-2 top-2 z-30 flex items-center gap-1.5">
+    <div className="window-controls app-no-drag absolute right-2 top-2 z-30 flex items-center gap-1">
       {showRetry && (
         <Button
           type="button"
@@ -49,7 +48,7 @@ export function WindowControls({
         size="compactIcon"
         title={pinned ? "Unpin window" : "Pin window"}
         aria-pressed={pinned}
-        className={cn(pinned && "bg-white/12 text-white/90")}
+        className={cn(pinned && "bg-white/14 text-white/90")}
         onClick={onTogglePinned}
       >
         {pinned ? <Pin size={14} /> : <PinOff size={14} />}
@@ -63,46 +62,16 @@ export function WindowControls({
       >
         <Settings size={14} />
       </Button>
-      <div className="mode-pill" aria-label="Window mode">
-        <ModeButton
-          active={mode === "compact"}
-          title="Compact mode"
-          onClick={() => onSetMode("compact")}
-        >
-          <Minimize2 size={13} />
-        </ModeButton>
-        <ModeButton
-          active={mode === "expanded"}
-          title="Expanded mode"
-          onClick={() => onSetMode("expanded")}
-        >
-          <Maximize2 size={13} />
-        </ModeButton>
-      </div>
+      <Button
+        type="button"
+        variant="chrome"
+        size="compactIcon"
+        title={mode === "expanded" ? "Minimize to compact" : "Expand lyric sheet"}
+        aria-label={mode === "expanded" ? "Minimize to compact" : "Expand lyric sheet"}
+        onClick={() => onSetMode(mode === "expanded" ? "compact" : "expanded")}
+      >
+        {mode === "expanded" ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+      </Button>
     </div>
-  );
-}
-
-function ModeButton({
-  active,
-  children,
-  title,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  title: string;
-  onClick(): void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      className={cn("mode-pill-button", active && "mode-pill-button-active")}
-      title={title}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }

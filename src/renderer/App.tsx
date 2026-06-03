@@ -98,7 +98,7 @@ export function App() {
       )}
       {state.windowMode === "compact" && (
         <div
-          className="app-drag absolute bottom-0 left-0 z-20 h-4 w-[calc(100%-152px)]"
+          className="app-drag absolute inset-0 z-20"
           aria-hidden="true"
         />
       )}
@@ -116,7 +116,6 @@ export function App() {
           track={state.track}
           mode={state.windowMode}
           subtitle={getTrackSubtitle(state)}
-          onExpand={() => void setWindowMode("expanded")}
         />
         {state.windowMode === "expanded" && (
           <LyricsView
