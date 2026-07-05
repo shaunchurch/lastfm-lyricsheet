@@ -9,6 +9,16 @@ import { VitePlugin } from "@electron-forge/plugin-vite";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { resolve } from "node:path";
 
+const shouldSignMac = process.platform === "darwin" && process.env.MACOS_SIGN === "true";
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`MACOS_SIGN=true requires ${name}`);
+  }
+  return value;
+}
+
 const config: ForgeConfig = {
   packagerConfig: {
     appBundleId: "com.lyricsheet.app",
@@ -19,6 +29,20 @@ const config: ForgeConfig = {
       cacheRoot: resolve(__dirname, ".cache/electron"),
     },
     icon: process.platform === "darwin" ? "icons/mac/icon" : undefined,
+    osxSign: shouldSignMac
+      ? {
+          identity: process.env.MACOS_SIGN_IDENTITY || "Developer ID Application",
+          keychain: process.env.MACOS_SIGN_KEYCHAIN,
+          strictVerify: true,
+        }
+      : undefined,
+    osxNotarize: shouldSignMac
+      ? {
+          appleApiKey: requireEnv("ASC_KEY_PATH"),
+          appleApiKeyId: requireEnv("ASC_KEY_ID"),
+          appleApiIssuer: requireEnv("ASC_ISSUER_ID"),
+        }
+      : undefined,
   },
   makers: [
     new MakerSquirrel({}, ["win32"]),

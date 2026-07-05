@@ -14,6 +14,7 @@
     "package": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge package",
     "make": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-zip",
     "make:dmg": "cross-env XDG_CACHE_HOME=.cache ELECTRON_CACHE=.cache/electron electron_config_cache=.cache/electron npm_config_devdir=.cache/node-gyp electron-forge make --targets=@electron-forge/maker-dmg",
+    "release:mac": "bash Scripts/package-macos-release.sh",
     "typecheck": "tsc --noEmit",
     "test": "pnpm run test:genius",
     "test:genius": "node -e \"require('node:fs').rmSync('.cache/test-build',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node --test tests/*.test.cjs"
