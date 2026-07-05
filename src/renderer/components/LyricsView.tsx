@@ -138,13 +138,75 @@ export function LyricsView({
   const repetitionActive = displayMode === "repetition";
 
   return (
-    <section className="app-no-drag flex min-h-0 flex-1 flex-col overflow-hidden">
+    <section className="app-no-drag relative flex min-h-0 flex-1 flex-col overflow-hidden">
       <LyricsBody
         html={lyrics.html}
         displayMode={displayMode}
         visibleSyntaxCategories={visibleSyntaxCategories}
         visibleRepetitionCategories={visibleRepetitionCategories}
       />
+      {syntaxActive && (
+        <div className="legend-rail" aria-label="Syntax legend">
+          <div className="syntax-legend">
+            {SYNTAX_CATEGORIES.map((category) => {
+              const visible = visibleSyntaxCategories.has(category.id);
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={cn(
+                    "syntax-legend-item",
+                    getSyntaxClass(category.id),
+                    !visible && "syntax-legend-item-hidden",
+                  )}
+                  aria-pressed={visible}
+                  title={getFilterTitle(
+                    category,
+                    visibleSyntaxCategories,
+                    ALL_SYNTAX_CATEGORY_IDS,
+                  )}
+                  onClick={() => toggleSyntaxCategory(category.id)}
+                >
+                  <span className="syntax-legend-dot" />
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {repetitionActive && (
+        <div className="legend-rail" aria-label="Repetition legend">
+          <div className="syntax-legend">
+            {REPETITION_CATEGORIES.map((category) => {
+              const visible = visibleRepetitionCategories.has(category.id);
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={cn(
+                    "syntax-legend-item",
+                    getRepetitionClass(category.id),
+                    !visible && "syntax-legend-item-hidden",
+                  )}
+                  aria-pressed={visible}
+                  title={getFilterTitle(
+                    category,
+                    visibleRepetitionCategories,
+                    ALL_REPETITION_CATEGORY_IDS,
+                  )}
+                  onClick={() => toggleRepetitionCategory(category.id)}
+                >
+                  <span className="syntax-legend-dot" />
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="source-footer">
         {lyrics.sourceUrl ? (
           <Button
@@ -200,64 +262,6 @@ export function LyricsView({
               Repeat
             </button>
           </div>
-          {syntaxActive && (
-            <div className="syntax-legend" aria-label="Syntax legend">
-              {SYNTAX_CATEGORIES.map((category) => {
-                const visible = visibleSyntaxCategories.has(category.id);
-
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className={cn(
-                      "syntax-legend-item",
-                      getSyntaxClass(category.id),
-                      !visible && "syntax-legend-item-hidden",
-                    )}
-                    aria-pressed={visible}
-                    title={getFilterTitle(
-                      category,
-                      visibleSyntaxCategories,
-                      ALL_SYNTAX_CATEGORY_IDS,
-                    )}
-                    onClick={() => toggleSyntaxCategory(category.id)}
-                  >
-                    <span className="syntax-legend-dot" />
-                    {category.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-          {repetitionActive && (
-            <div className="syntax-legend" aria-label="Repetition legend">
-              {REPETITION_CATEGORIES.map((category) => {
-                const visible = visibleRepetitionCategories.has(category.id);
-
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className={cn(
-                      "syntax-legend-item",
-                      getRepetitionClass(category.id),
-                      !visible && "syntax-legend-item-hidden",
-                    )}
-                    aria-pressed={visible}
-                    title={getFilterTitle(
-                      category,
-                      visibleRepetitionCategories,
-                      ALL_REPETITION_CATEGORY_IDS,
-                    )}
-                    onClick={() => toggleRepetitionCategory(category.id)}
-                  >
-                    <span className="syntax-legend-dot" />
-                    {category.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
     </section>

@@ -30,7 +30,7 @@ export function TrackCard({ track, mode, subtitle }: TrackCardProps) {
 
   const className = cn(
     "grid w-full grid-cols-[48px_minmax(0,1fr)] items-center gap-3 text-left",
-    compact ? "app-drag px-4 py-3" : "px-4 pb-3 pt-[13px]",
+    compact ? "px-4 py-3" : "px-4 pb-3 pt-[13px]",
   );
 
   return (

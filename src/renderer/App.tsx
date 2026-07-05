@@ -97,10 +97,16 @@ export function App() {
         />
       )}
       {state.windowMode === "compact" && (
-        <div
-          className="app-drag absolute inset-0 z-20"
-          aria-hidden="true"
-        />
+        <>
+          <div
+            className="app-drag absolute bottom-0 left-0 top-0 z-20 w-[calc(100%-152px)]"
+            aria-hidden="true"
+          />
+          <div
+            className="app-drag absolute bottom-0 left-0 right-0 z-20 h-5"
+            aria-hidden="true"
+          />
+        </>
       )}
       <WindowControls
         mode={state.windowMode}
