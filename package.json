@@ -1,7 +1,7 @@
 {
   "name": "lastfm-lyricsheet",
   "productName": "LyricSheet",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A tiny always-on desktop lyric sheet for your current Last.fm track.",
   "main": ".vite/build/main.js",
   "private": true,
