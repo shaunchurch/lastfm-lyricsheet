@@ -49,6 +49,31 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Preflight signing secrets
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          for name in MACOS_CERT_P12 MACOS_CERT_PASSWORD ASC_KEY_P8 ASC_KEY_ID ASC_ISSUER_ID; do
+            if [ -z "${!name:-}" ]; then
+              missing+=("$name")
+            fi
+          done
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Missing required signing secrets: ${missing[*]}. Set them under Settings > Secrets and variables > Actions. See docs/release-process.md." >&2
+            exit 1
+          fi
+          if ! printf '%s' "$MACOS_CERT_P12" | base64 --decode > /dev/null 2>&1; then
+            echo "::error::MACOS_CERT_P12 is not valid base64. Export the .p12 and re-encode with: base64 -i DeveloperID.p12" >&2
+            exit 1
+          fi
+          echo "All signing secrets present."
+
       - name: Import Developer ID certificate
         env:
           MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
