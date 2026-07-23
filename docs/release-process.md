@@ -12,8 +12,8 @@ damaged or corrupt after download.
 3. Push a matching tag:
 
    ```sh
-   git tag v0.2.1
-   git push origin v0.2.1
+   git tag v0.2.2
+   git push origin v0.2.2
    ```
 
 4. Watch the **Release** GitHub Actions workflow.
