@@ -15,20 +15,13 @@ env:
 
 jobs:
   release:
-    runs-on: macos-15
+    # The Mac mini controller creates one disposable Tart VM for these exact
+    # labels. There is no persistent native or GitHub-hosted fallback.
+    runs-on: [self-hosted, macOS, ARM64, tart-isolated, lastfm-lyricsheet]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Enable pnpm
-        run: |
-          set -euo pipefail
-          corepack enable
-          corepack prepare pnpm@11.1.2 --activate
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
+      - uses: ./.github/actions/setup-macos-node
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -53,13 +46,14 @@ jobs:
         env:
           MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -euo pipefail
           missing=()
-          for name in MACOS_CERT_P12 MACOS_CERT_PASSWORD ASC_KEY_P8 ASC_KEY_ID ASC_ISSUER_ID; do
+          for name in MACOS_CERT_P12 MACOS_CERT_PASSWORD APPLE_TEAM_ID ASC_KEY_P8 ASC_KEY_ID ASC_ISSUER_ID; do
             if [ -z "${!name:-}" ]; then
               missing+=("$name")
             fi
@@ -72,26 +66,42 @@ jobs:
             echo "::error::MACOS_CERT_P12 is not valid base64. Export the .p12 and re-encode with: base64 -i DeveloperID.p12" >&2
             exit 1
           fi
+          if [[ ! "$APPLE_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]]; then
+            echo "::error::APPLE_TEAM_ID must be a 10-character Apple team ID" >&2
+            exit 1
+          fi
           echo "All signing secrets present."
 
       - name: Import Developer ID certificate
         env:
           MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
-          KEYCHAIN="$RUNNER_TEMP/release.keychain-db"
+          KEYCHAIN="$RUNNER_TEMP/lyricsheet-release.keychain-db"
           KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "::add-mask::$KEYCHAIN_PASSWORD"
+          echo "MACOS_SIGN_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
           printf '%s' "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security import "$RUNNER_TEMP/cert.p12" -P "$MACOS_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
-          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
-          security find-identity -v -p codesigning "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
           rm "$RUNNER_TEMP/cert.p12"
-          echo "MACOS_SIGN_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
+
+          SIGNING_IDENTITY_HASH="$(
+            security find-identity -v -p codesigning "$KEYCHAIN" |
+              awk -v team="$APPLE_TEAM_ID" \
+                '$0 ~ /Developer ID Application:/ && $0 ~ "\\(" team "\\)" {print $2; exit}'
+          )"
+          if [ -z "$SIGNING_IDENTITY_HASH" ]; then
+            echo "::error::Imported certificate has no Developer ID Application identity for team $APPLE_TEAM_ID" >&2
+            exit 1
+          fi
+          echo "MACOS_SIGN_IDENTITY=$SIGNING_IDENTITY_HASH" >> "$GITHUB_ENV"
 
       - name: Prepare notarization key
         env:
@@ -99,44 +109,95 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$ASC_KEY_P8" > "$RUNNER_TEMP/asc-key.p8"
+          chmod 600 "$RUNNER_TEMP/asc-key.p8"
           echo "ASC_KEY_PATH=$RUNNER_TEMP/asc-key.p8" >> "$GITHUB_ENV"
 
       - name: Build signed and notarized macOS release
         env:
           MACOS_SIGN: "true"
-          MACOS_SIGN_IDENTITY: ${{ vars.MACOS_SIGN_IDENTITY || 'Developer ID Application' }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: bash Scripts/package-macos-release.sh
 
       - name: Verify local signed app
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          bash Scripts/verify-macos-bundle.sh \
+            --app "out/LyricSheet-darwin-${MACOS_RELEASE_ARCH}/LyricSheet.app" \
+            --version "${GITHUB_REF_NAME#v}" \
+            --arch "$MACOS_RELEASE_ARCH" \
+            --notarized \
+            --team-id "$APPLE_TEAM_ID"
+
+      - name: Prepare release artifacts
+        id: release_artifacts
         run: |
           set -euo pipefail
-          APP="out/LyricSheet-darwin-${MACOS_RELEASE_ARCH}/LyricSheet.app"
-          codesign -dv --verbose=4 "$APP" > "$RUNNER_TEMP/codesign-details.txt" 2>&1
-          grep -q '^Authority=Developer ID Application:' "$RUNNER_TEMP/codesign-details.txt"
-          grep -Eq '^(Runtime Version=|.*flags=.*runtime)' "$RUNNER_TEMP/codesign-details.txt"
-          codesign --verify --deep --strict --verbose=2 "$APP"
-          spctl -a -vv --type execute "$APP"
-          xcrun stapler validate "$APP"
+          VERSION="${GITHUB_REF_NAME#v}"
+          ZIP_PATH="out/make/zip/darwin/${MACOS_RELEASE_ARCH}/LyricSheet-darwin-${MACOS_RELEASE_ARCH}-${VERSION}.zip"
+          ZIP_NAME="$(basename "$ZIP_PATH")"
+          DIGEST="$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')"
+          printf '%s  %s\n' "$DIGEST" "$ZIP_NAME" > "$ZIP_PATH.sha256"
+          {
+            echo "MACOS_RELEASE_ZIP=$ZIP_PATH"
+            echo "MACOS_RELEASE_CHECKSUM=$ZIP_PATH.sha256"
+          } >> "$GITHUB_ENV"
+          {
+            echo "zip_path=$ZIP_PATH"
+            echo "checksum_path=$ZIP_PATH.sha256"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Publish GitHub release
+      - name: Retain verified workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LyricSheet-${{ github.ref_name }}-arm64
+          path: |
+            ${{ steps.release_artifacts.outputs.zip_path }}
+            ${{ steps.release_artifacts.outputs.checksum_path }}
+          if-no-files-found: error
+
+      - name: Stage draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          ZIP_PATH="out/make/zip/darwin/${MACOS_RELEASE_ARCH}/LyricSheet-darwin-${MACOS_RELEASE_ARCH}-${VERSION}.zip"
+          SOURCE_MARKER="Source commit: $GITHUB_SHA"
+          printf -v RELEASE_NOTES '%s\n\n%s' \
+            "Download LyricSheet-darwin-${MACOS_RELEASE_ARCH}-${VERSION}.zip and move LyricSheet.app to Applications." \
+            "$SOURCE_MARKER"
+          ASSETS=("$MACOS_RELEASE_ZIP" "$MACOS_RELEASE_CHECKSUM")
 
           if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$ZIP_PATH" --clobber
-          else
-            gh release create "$GITHUB_REF_NAME" "$ZIP_PATH" \
+            EXISTING_DRAFT="$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft)"
+            EXISTING_NOTES="$(gh release view "$GITHUB_REF_NAME" --json body --jq '.body // ""')"
+            [ "$EXISTING_DRAFT" = true ] || {
+              echo "::error::Published release $GITHUB_REF_NAME is immutable" >&2
+              exit 1
+            }
+            [[ "$EXISTING_NOTES" == *"$SOURCE_MARKER"* ]] || {
+              echo "::error::Draft release $GITHUB_REF_NAME belongs to another source commit" >&2
+              exit 1
+            }
+            gh release upload "$GITHUB_REF_NAME" "${ASSETS[@]}" --clobber
+            gh release edit "$GITHUB_REF_NAME" \
+              --draft \
               --title "LyricSheet $VERSION" \
-              --generate-notes
+              --notes "$RELEASE_NOTES"
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "${ASSETS[@]}" \
+              --draft \
+              --verify-tag \
+              --title "LyricSheet $VERSION" \
+              --notes "$RELEASE_NOTES"
           fi
 
-      - name: Verify published release
+      - name: Verify staged release
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
@@ -144,4 +205,22 @@ jobs:
             --version "$VERSION" \
             --release-repo "$GITHUB_REPOSITORY" \
             --tag "$GITHUB_REF_NAME" \
-            --arch "$MACOS_RELEASE_ARCH"
+            --arch "$MACOS_RELEASE_ARCH" \
+            --team-id "$APPLE_TEAM_ID"
+
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          security list-keychains -d user -s login.keychain-db 2>/dev/null || true
+          if [ -n "${MACOS_SIGN_KEYCHAIN:-}" ]; then
+            security delete-keychain "$MACOS_SIGN_KEYCHAIN" 2>/dev/null || true
+          fi
+          rm -f \
+            "$RUNNER_TEMP/cert.p12" \
+            "$RUNNER_TEMP/asc-key.p8" \
+            "$RUNNER_TEMP/notarize.zip"

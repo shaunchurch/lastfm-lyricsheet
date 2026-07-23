@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MACOS_RELEASE_ARCH: arm64
+
+jobs:
+  build:
+    # The Mac mini controller creates one disposable Tart VM for these exact
+    # labels. There is no persistent native or GitHub-hosted fallback.
+    runs-on: [self-hosted, macOS, ARM64, tart-isolated, lastfm-lyricsheet]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-macos-node
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Package unsigned macOS app
+        run: bash Scripts/package-macos-release.sh
+
+      - name: Verify packaged app
+        run: |
+          bash Scripts/verify-macos-bundle.sh \
+            --app "out/LyricSheet-darwin-${MACOS_RELEASE_ARCH}/LyricSheet.app" \
+            --version "$(node -p "require('./package.json').version")" \
+            --arch "$MACOS_RELEASE_ARCH"
+
+      - name: Verify pipeline contract
+        run: bash Scripts/tests/ci-workflow-contract.sh

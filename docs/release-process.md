@@ -12,26 +12,35 @@ damaged or corrupt after download.
 3. Push a matching tag:
 
    ```sh
-   git tag v0.2.1
-   git push origin v0.2.1
+   git tag v0.2.2
+   git push origin v0.2.2
    ```
 
 4. Watch the **Release** GitHub Actions workflow.
-5. Confirm the final **Verify published release** step passed.
+5. Confirm **Verify staged release** passed and **Publish verified release**
+   completed.
 
 ## What The Workflow Does
 
 1. Verifies the tag matches `package.json`.
-2. Installs dependencies from `pnpm-lock.yaml`.
-3. Runs typecheck and tests.
-4. Imports the Developer ID Application certificate into an ephemeral keychain.
-5. Builds LyricSheet with Electron Forge, Developer ID signing, hardened runtime,
+2. Runs in a disposable Tart VM on the shared Mac mini and verifies the pinned
+   arm64/Xcode 26 toolchain.
+3. Installs dependencies from `pnpm-lock.yaml`.
+4. Runs typecheck and tests.
+5. Imports the expected Apple team's Developer ID Application certificate into
+   an ephemeral keychain.
+6. Builds LyricSheet with Electron Forge, Developer ID signing, hardened runtime,
    notarization, and stapling enabled.
-6. Packages `LyricSheet.app` with `ditto --keepParent`.
-7. Publishes or replaces the GitHub release ZIP for the tag.
-8. Re-downloads the public ZIP and verifies the shipped app version, bundle ID,
-   Developer ID signature, hardened runtime, code-signing integrity, Gatekeeper
-   acceptance, and stapled notarization ticket.
+7. Packages `LyricSheet.app` with `ditto --keepParent`, writes a SHA-256 file,
+   and retains both as a workflow artifact.
+8. Stages a draft GitHub release tied to the source commit. Published releases
+   are immutable; only a draft owned by the same commit may be replaced.
+9. Downloads the staged artifacts and verifies the checksum, shipped app
+   version, bundle ID, architecture, expected signing team, hardened runtime,
+   code-signing integrity, Gatekeeper acceptance, and notarization ticket.
+10. Publishes the draft only after verification passes.
+11. Removes the release keychain and API key material on every exit path. The
+    Tart controller then erases the VM.
 
 Sparkle updates are intentionally out of scope for now.
 
@@ -43,15 +52,21 @@ Set these in GitHub repository secrets:
 | --- | --- |
 | `MACOS_CERT_P12` | Developer ID Application certificate, `.p12` export, base64-encoded |
 | `MACOS_CERT_PASSWORD` | Password protecting the `.p12` |
+| `APPLE_TEAM_ID` | 10-character Apple Developer team ID expected in the certificate and shipped signature |
 | `ASC_KEY_ID` | App Store Connect API key ID for notarization |
 | `ASC_ISSUER_ID` | App Store Connect issuer ID |
 | `ASC_KEY_P8` | Contents of the App Store Connect API `.p8` key |
 
-Optional repository variable:
+## Continuous Integration
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `MACOS_SIGN_IDENTITY` | `Developer ID Application` | Exact signing identity if the keychain contains more than one Developer ID Application certificate |
+Pull requests and pushes to `master` run `.github/workflows/ci.yml`. CI uses the
+same disposable Tart runner and pinned Node/pnpm toolchain as Release, but has
+read-only permissions and no signing secrets. It typechecks, tests, packages an
+unsigned arm64 app, and verifies the bundle without launching it.
+
+Both workflows request the exact labels `self-hosted, macOS, ARM64,
+tart-isolated, lastfm-lyricsheet`. The shared controller must pin the matching
+`.github/tart-runner-consumer.tsv` declaration before jobs can be admitted.
 
 ## Local Notes
 
