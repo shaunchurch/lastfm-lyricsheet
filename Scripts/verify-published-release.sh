@@ -8,7 +8,7 @@ fail() {
 
 usage() {
   cat <<'USAGE'
-Usage: verify-published-release.sh --version <x.y.z> --release-repo <owner/repo> --tag <vX.Y.Z> [--arch arm64|x64|universal]
+Usage: verify-published-release.sh --version <x.y.z> --release-repo <owner/repo> --tag <vX.Y.Z> --team-id <id> [--arch arm64|x64|universal]
 
 Downloads the public GitHub release zip and verifies that Gatekeeper can accept
 the shipped macOS app.
@@ -19,6 +19,7 @@ version=""
 release_repo=""
 tag=""
 arch="arm64"
+team_id=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -38,6 +39,10 @@ while [ "$#" -gt 0 ]; do
       arch="${2:-}"
       shift 2
       ;;
+    --team-id)
+      team_id="${2:-}"
+      shift 2
+      ;;
     --help|-h)
       usage
       exit 0
@@ -51,6 +56,7 @@ done
 [ -n "$version" ] || fail "--version is required"
 [ -n "$release_repo" ] || fail "--release-repo is required"
 [ -n "$tag" ] || fail "--tag is required"
+[ -n "$team_id" ] || fail "--team-id is required"
 
 case "$arch" in
   arm64|x64|universal) ;;
@@ -65,9 +71,11 @@ trap 'rm -rf "$workdir"' EXIT
 asset_name="LyricSheet-darwin-${arch}-${version}.zip"
 zip_url="https://github.com/${release_repo}/releases/download/${tag}/${asset_name}"
 zip_path="$workdir/$asset_name"
+checksum_name="$asset_name.sha256"
+checksum_url="$zip_url.sha256"
+checksum_path="$workdir/$checksum_name"
 unzipped_dir="$workdir/unzipped"
 app_path="$unzipped_dir/LyricSheet.app"
-app_info_plist="$app_path/Contents/Info.plist"
 
 curl_retry() {
   local url="$1"
@@ -87,33 +95,28 @@ curl_retry() {
   done
 }
 
-plist_value() {
-  /usr/libexec/PlistBuddy -c "Print :$2" "$1"
-}
-
-echo "Downloading published release asset: $zip_url"
-curl_retry "$zip_url" "$zip_path" || fail "could not download published release asset"
-shasum -a 256 "$zip_path"
+if [ -n "${GH_TOKEN:-}" ]; then
+  gh release download "$tag" \
+    --repo "$release_repo" \
+    --dir "$workdir" \
+    --pattern "$asset_name" \
+    --pattern "$checksum_name" || fail "could not download staged release assets"
+else
+  echo "Downloading published release asset: $zip_url"
+  curl_retry "$zip_url" "$zip_path" || fail "could not download published release asset"
+  curl_retry "$checksum_url" "$checksum_path" || fail "could not download published checksum"
+fi
+(cd "$workdir" && shasum -a 256 -c "$checksum_name") || fail "published checksum does not match"
 
 mkdir -p "$unzipped_dir"
 ditto -x -k "$zip_path" "$unzipped_dir"
 [ -d "$app_path" ] || fail "release zip did not contain LyricSheet.app"
-[ -f "$app_info_plist" ] || fail "release app is missing Contents/Info.plist"
 
-actual_version="$(plist_value "$app_info_plist" CFBundleShortVersionString)"
-actual_bundle_id="$(plist_value "$app_info_plist" CFBundleIdentifier)"
+"$(dirname "$0")/verify-macos-bundle.sh" \
+  --app "$app_path" \
+  --version "$version" \
+  --arch "$arch" \
+  --notarized \
+  --team-id "$team_id"
 
-[ "$actual_version" = "$version" ] || fail "published app version is $actual_version, expected $version"
-[ "$actual_bundle_id" = "com.lyricsheet.app" ] || fail "published app bundle id is $actual_bundle_id"
-
-codesign_details="$workdir/codesign-details.txt"
-codesign -dv --verbose=4 "$app_path" > "$codesign_details" 2>&1
-grep -q '^Authority=Developer ID Application:' "$codesign_details" || fail "published app is not signed with a Developer ID Application certificate"
-grep -Eq '^(Runtime Version=|.*flags=.*runtime)' "$codesign_details" || fail "published app does not have hardened runtime enabled"
-grep -q '^TeamIdentifier=' "$codesign_details" || fail "published app has no signing team identifier"
-
-codesign --verify --deep --strict --verbose=2 "$app_path"
-spctl -a -vv --type execute "$app_path"
-xcrun stapler validate "$app_path"
-
-echo "Published release $tag is signed, notarized, stapled, and Gatekeeper-accepted"
+echo "Release $tag is signed, notarized, stapled, and Gatekeeper-accepted"

@@ -1,0 +1,25 @@
+name: Set up macOS Node toolchain
+description: Verify the disposable macOS runner and install pinned Node and pnpm versions
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure Homebrew tools on PATH
+      shell: bash
+      run: echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+
+    - name: Verify macOS toolchain
+      shell: bash
+      run: bash Scripts/verify-macos-ci-toolchain.sh
+
+    - name: Enable pnpm
+      shell: bash
+      run: |
+        set -euo pipefail
+        corepack enable
+        corepack prepare pnpm@11.1.2 --activate
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: pnpm
