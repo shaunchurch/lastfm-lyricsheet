@@ -44,5 +44,23 @@ jobs:
             --version "$(node -p "require('./package.json').version")" \
             --arch "$MACOS_RELEASE_ARCH"
 
+      - name: Prepare CI artifact
+        id: ci_artifact
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          bash Scripts/prepare-macos-artifacts.sh \
+            "$VERSION" "$MACOS_RELEASE_ARCH" >> "$GITHUB_OUTPUT"
+
+      - name: Retain verified unsigned app
+        uses: actions/upload-artifact@v4
+        with:
+          name: LyricSheet-${{ github.sha }}-arm64-unsigned
+          path: |
+            ${{ steps.ci_artifact.outputs.zip_path }}
+            ${{ steps.ci_artifact.outputs.checksum_path }}
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Verify pipeline contract
         run: bash Scripts/tests/ci-workflow-contract.sh

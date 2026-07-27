@@ -135,18 +135,8 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          ZIP_PATH="out/make/zip/darwin/${MACOS_RELEASE_ARCH}/LyricSheet-darwin-${MACOS_RELEASE_ARCH}-${VERSION}.zip"
-          ZIP_NAME="$(basename "$ZIP_PATH")"
-          DIGEST="$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')"
-          printf '%s  %s\n' "$DIGEST" "$ZIP_NAME" > "$ZIP_PATH.sha256"
-          {
-            echo "MACOS_RELEASE_ZIP=$ZIP_PATH"
-            echo "MACOS_RELEASE_CHECKSUM=$ZIP_PATH.sha256"
-          } >> "$GITHUB_ENV"
-          {
-            echo "zip_path=$ZIP_PATH"
-            echo "checksum_path=$ZIP_PATH.sha256"
-          } >> "$GITHUB_OUTPUT"
+          bash Scripts/prepare-macos-artifacts.sh \
+            "$VERSION" "$MACOS_RELEASE_ARCH" >> "$GITHUB_OUTPUT"
 
       - name: Retain verified workflow artifact
         uses: actions/upload-artifact@v4
@@ -160,6 +150,8 @@ jobs:
       - name: Stage draft release
         env:
           GH_TOKEN: ${{ github.token }}
+          MACOS_RELEASE_ZIP: ${{ steps.release_artifacts.outputs.zip_path }}
+          MACOS_RELEASE_CHECKSUM: ${{ steps.release_artifacts.outputs.checksum_path }}
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"

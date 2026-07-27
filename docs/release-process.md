@@ -62,7 +62,10 @@ Set these in GitHub repository secrets:
 Pull requests and pushes to `master` run `.github/workflows/ci.yml`. CI uses the
 same disposable Tart runner and pinned Node/pnpm toolchain as Release, but has
 read-only permissions and no signing secrets. It typechecks, tests, packages an
-unsigned arm64 app, and verifies the bundle without launching it.
+unsigned arm64 app, and verifies the bundle without launching it. After
+verification, each run retains the ZIP and its SHA-256 checksum for 14 days as
+the `LyricSheet-<commit>-arm64-unsigned` workflow artifact. This is a test build,
+not the signed and notarized public release.
 
 Both workflows request the exact labels `self-hosted, macOS, ARM64,
 tart-isolated, lastfm-lyricsheet`. The shared controller must pin the matching

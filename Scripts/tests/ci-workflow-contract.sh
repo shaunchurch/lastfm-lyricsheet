@@ -45,7 +45,11 @@ for value in \
   'pnpm run typecheck' \
   'pnpm test' \
   'bash Scripts/package-macos-release.sh' \
-  'bash Scripts/verify-macos-bundle.sh'; do
+  'bash Scripts/verify-macos-bundle.sh' \
+  'bash Scripts/prepare-macos-artifacts.sh' \
+  'actions/upload-artifact@v4' \
+  'LyricSheet-${{ github.sha }}-arm64-unsigned' \
+  'if-no-files-found: error'; do
   require_literal "$ci_workflow" "$value"
 done
 
@@ -61,8 +65,8 @@ done
 for value in \
   'APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}' \
   'MACOS_SIGN_IDENTITY=$SIGNING_IDENTITY_HASH' \
+  'bash Scripts/prepare-macos-artifacts.sh' \
   'actions/upload-artifact@v4' \
-  'shasum -a 256' \
   'Stage draft release' \
   'Source commit: $GITHUB_SHA' \
   'Published release $GITHUB_REF_NAME is immutable' \
