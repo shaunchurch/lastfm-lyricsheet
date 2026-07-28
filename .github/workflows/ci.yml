@@ -58,7 +58,7 @@ jobs:
           name: LyricSheet-${{ github.sha }}-arm64-unsigned
           path: |
             ${{ steps.ci_artifact.outputs.zip_path }}
-            ${{ steps.ci_artifact.outputs.checksum_path }}
+            ${{ steps.ci_artifact.outputs.zip_checksum_path }}
           if-no-files-found: error
           retention-days: 14
 

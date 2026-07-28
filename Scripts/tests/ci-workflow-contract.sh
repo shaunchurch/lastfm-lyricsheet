@@ -8,6 +8,8 @@ release_workflow="$root/.github/workflows/release.yml"
 consumer="$root/.github/tart-runner-consumer.tsv"
 actionlint_config="$root/.github/actionlint.yaml"
 toolchain_action="$root/.github/actions/setup-macos-node/action.yml"
+dmg_packager="$root/Scripts/package-macos-dmg.sh"
+dmg_verifier="$root/Scripts/verify-macos-dmg.sh"
 expected_consumer=$'tart-runner-consumer-v1\tlastfm-lyricsheet\tshaunchurch/lastfm-lyricsheet\tlastfm-lyricsheet-ci-tart-\tself-hosted,macOS,ARM64,tart-isolated,lastfm-lyricsheet'
 runner_labels='runs-on: [self-hosted, macOS, ARM64, tart-isolated, lastfm-lyricsheet]'
 
@@ -27,6 +29,8 @@ require_literal() {
 [ -f "$consumer" ] || fail "Tart consumer declaration is missing"
 [ -f "$actionlint_config" ] || fail "actionlint configuration is missing"
 [ -f "$toolchain_action" ] || fail "shared toolchain action is missing"
+[ -f "$dmg_packager" ] || fail "DMG packaging script is missing"
+[ -f "$dmg_verifier" ] || fail "DMG verification script is missing"
 
 [ "$(cat "$consumer")" = "$expected_consumer" ] ||
   fail "Tart consumer declaration does not match the controller contract"
@@ -65,7 +69,12 @@ done
 for value in \
   'APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}' \
   'MACOS_SIGN_IDENTITY=$SIGNING_IDENTITY_HASH' \
+  'bash Scripts/package-macos-dmg.sh' \
+  'bash Scripts/verify-macos-dmg.sh' \
   'bash Scripts/prepare-macos-artifacts.sh' \
+  '--with-dmg' \
+  '${{ steps.release_artifacts.outputs.dmg_path }}' \
+  '${{ steps.release_artifacts.outputs.dmg_checksum_path }}' \
   'actions/upload-artifact@v4' \
   'Stage draft release' \
   'Source commit: $GITHUB_SHA' \
