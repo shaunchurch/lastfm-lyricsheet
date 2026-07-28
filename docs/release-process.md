@@ -2,8 +2,8 @@
 
 LyricSheet macOS releases are distributed outside the Mac App Store. Release
 artifacts must be Developer ID signed, hardened-runtime enabled, notarized, and
-stapled before publishing. Unsigned local ZIPs can be rejected by Gatekeeper as
-damaged or corrupt after download.
+stapled before publishing. The DMG is the normal installer; the ZIP remains
+available for update tooling and manual installation.
 
 ## How to Ship
 
@@ -12,8 +12,8 @@ damaged or corrupt after download.
 3. Push a matching tag:
 
    ```sh
-   git tag v0.2.2
-   git push origin v0.2.2
+   git tag v0.2.3
+   git push origin v0.2.3
    ```
 
 4. Watch the **Release** GitHub Actions workflow.
@@ -31,15 +31,17 @@ damaged or corrupt after download.
    an ephemeral keychain.
 6. Builds LyricSheet with Electron Forge, Developer ID signing, hardened runtime,
    notarization, and stapling enabled.
-7. Packages `LyricSheet.app` with `ditto --keepParent`, writes a SHA-256 file,
-   and retains both as a workflow artifact.
-8. Stages a draft GitHub release tied to the source commit. Published releases
+7. Packages `LyricSheet.app` as a ZIP and DMG, signs and notarizes the outer
+   DMG, staples its ticket, and writes SHA-256 files for both artifacts.
+8. Verifies the local DMG's integrity, Developer ID team, Gatekeeper acceptance,
+   stapled ticket, Applications link, and contained app.
+9. Stages a draft GitHub release tied to the source commit. Published releases
    are immutable; only a draft owned by the same commit may be replaced.
-9. Downloads the staged artifacts and verifies the checksum, shipped app
-   version, bundle ID, architecture, expected signing team, hardened runtime,
-   code-signing integrity, Gatekeeper acceptance, and notarization ticket.
-10. Publishes the draft only after verification passes.
-11. Removes the release keychain and API key material on every exit path. The
+10. Downloads both staged artifacts and verifies their checksums, shipped app
+    version, bundle ID, architecture, expected signing team, hardened runtime,
+    code-signing integrity, Gatekeeper acceptance, and notarization tickets.
+11. Publishes the draft only after verification passes.
+12. Removes the release keychain and API key material on every exit path. The
     Tart controller then erases the VM.
 
 Sparkle updates are intentionally out of scope for now.
